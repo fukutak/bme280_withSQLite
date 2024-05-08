@@ -26,6 +26,8 @@ cursor = conn.cursor()
 cursor.execute(create_table_sql)
 conn.commit()
 
+INTERVAL_TIME = 15 * 60 # sec
+
 # 15分ごとにデータを取得してSQLiteに格納
 while True:
     # bme280からデータを取得
@@ -45,7 +47,7 @@ while True:
     conn.commit()
 
     # 15分待機
-    time.sleep(900)  # 15分 = 15 * 60秒
+    time.sleep(INTERVAL_TIME)  # 15分 = 15 * 60秒
 
 # データベース接続をクローズ
 conn.close()
