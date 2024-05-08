@@ -33,6 +33,8 @@ MAX_DB_SIZE = 2 * 1024 * 1024 * 1024  # 2GiB
 # 15分ごとにデータを取得してSQLiteに格納
 while True:
     # bme280からデータを取得
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"-----{timestamp}------")
     data = readData()
     temperature = round(data['temp'], 3)
     pressure = round(data['press'], 3)

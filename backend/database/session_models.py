@@ -5,7 +5,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-engine = create_engine('sqlite:///database.sqlite3', convert_unicode=True)
+engine = create_engine('sqlite:///bme280_data.db', convert_unicode=True)
 
 Base = declarative_base()
 Base.metadata.bind = engine
@@ -21,7 +21,8 @@ class BME280Data(Base):
     pressure = Column(Float)
     humidity = Column(Float)
     timestamp = Column(DateTime)
-    room_id = Column(Integer, ForeignKey("room.room_id"))
+    # room_id = Column(Integer, ForeignKey("room.room_id"))
+    room_id = Column(String)
 
 class Room(Base):
     __tablename__ = "room"
@@ -30,3 +31,5 @@ class Room(Base):
     room_name = Column(String)
     room_user = Column(String)
     comment = Column(String)
+
+Base.metadata.create_all(engine)
