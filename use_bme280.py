@@ -2,6 +2,8 @@ import sqlite3
 import time
 from datetime import datetime
 from use_bme280 import readData
+import shutil
+import os
 
 # SQLiteデータベースのパス
 db_path = "bme280_data.db"
@@ -26,6 +28,9 @@ cursor = conn.cursor()
 cursor.execute(create_table_sql)
 conn.commit()
 
+# データ保存制限（2GiB）
+max_db_size = 2 * 1024 * 1024 * 1024  # 2GiB
+
 # 15分ごとにデータを取得してSQLiteに格納
 while True:
     # bme280からデータを取得
@@ -44,8 +49,9 @@ while True:
     cursor.execute(insert_sql, (temperature, pressure, humidity, timestamp, room_id))
     conn.commit()
 
-    # 15分待機
-    time.sleep(900)  # 15分 = 15 * 60秒
+    # データベースサイズをチェック
+    db_size = os.path.getsize(db_path)
 
-# データベース接続をクローズ
-conn.close()
+    # データベースサイズが制限を超えた場合、古いデータを削除
+    if db_size > max_db_size:
+        pass
