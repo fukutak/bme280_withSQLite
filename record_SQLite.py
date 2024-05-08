@@ -2,6 +2,7 @@ import sqlite3
 import time
 from datetime import datetime
 from use_bme280 import readData
+import os
 
 # SQLiteデータベースのパス
 db_path = "bme280_data.db"
@@ -27,6 +28,7 @@ cursor.execute(create_table_sql)
 conn.commit()
 
 INTERVAL_TIME = 15 * 60 # sec
+MAX_DB_SIZE = 2 * 1024 * 1024 * 1024  # 2GiB
 
 # 15分ごとにデータを取得してSQLiteに格納
 while True:
@@ -48,6 +50,12 @@ while True:
 
     # 15分待機
     time.sleep(INTERVAL_TIME)  # 15分 = 15 * 60秒
+    db_size = os.path.getsize(db_path)
+    if db_size >= MAX_DB_SIZE:
+        print(f"Exceed max db size: {MAX_DB_SIZE}, now: {db_size}")
+        print("Delete some records.")
+        pass
+
 
 # データベース接続をクローズ
 conn.close()
