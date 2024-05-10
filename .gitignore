@@ -1,2 +1,4 @@
 .venv
 backend/__pycache__
+frontend/horizon-ui-chakra/node_modules
+backend/bme280_data.db
