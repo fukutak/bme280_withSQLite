@@ -1,7 +1,7 @@
-from database.session_models import db_session
+from util.session_models import db_session
 from flask import Flask
 from flask_graphql import GraphQLView
-from database.queries import schema
+from util.queries import schema
 
 app = Flask(__name__)
 app.add_url_rule(
