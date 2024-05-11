@@ -63,6 +63,9 @@ import {
 import tableDataCheck from "views/admin/default/variables/tableDataCheck.json";
 import tableDataComplex from "views/admin/default/variables/tableDataComplex.json";
 
+// graphql
+import { ApolloClient, InMemoryCache, ApolloProvider, gql } from '@apollo/client';
+
 class CurrentParameter {
   constructor(amount, changeRate, unit) {
     this.amount = amount;
@@ -71,29 +74,35 @@ class CurrentParameter {
   }
 }
 
+const GET_CURRENT_DATA = gql`
+  query {
+    currentData {
+      currentTimestamp
+      currentTemperature
+      changeRateTemperature
+      currentPressure
+      changeRatePressure
+      currentHumidity
+      changeRateHumidity
+      currentComfortIndex
+      changeRateComfortIndex
+    }
+  }
+`;
+
+const GET_SENSOR_DATA_BY_DATE_RANGE = gql`
+  query sensorDataByDateRange($dateRange: DateRange!) {
+    sensorDataByDateRange(dateRange: $dateRange) {
+      temperature
+      pressure
+      humidity
+      timestamp
+    }
+  }
+`;
+
 export default function UserReports() {
-  //   const graphql = require('graphql');
-  //   const subscription = graphql.subscribe({
-  //     query: `
-  //         subscription {
-  //             sensorDataUpdated(dateRange: { startDate: "2024-05-10", endDate: "2024-05-10" }) {
-  //                 temperature
-  //                 pressure
-  //                 humidity
-  //             }
-  //         }
-  //     `,
-  //     variables: {
-  //         dateRange: {
-  //             startDate: "2024-05-10",
-  //             endDate: "2024-05-10"
-  //         }
-  //     },
-  //     onSubscriptionData: (data) => {
-  //       console.log('aaaa')
-  //         console.log(data.data.sensorDataUpdated);
-  //     }
-  // });
+
   // from backend
   const currentData = {
     confortIndex: new CurrentParameter(73, 5, '/100'),
