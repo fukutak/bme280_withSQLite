@@ -1,7 +1,7 @@
 import sqlite3
 import time
 from datetime import datetime
-from use_bme280 import readData
+from util.use_bme280 import readData
 import os
 
 # SQLiteデータベースのパス
