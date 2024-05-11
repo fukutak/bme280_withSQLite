@@ -38,18 +38,40 @@ def calc_comfort_index(T, H, P): # T:temperature, H:humidity, P:pressure
     comfort_index = -100/3*(T_idx+H_idx+P_idx) + 100
     return round(comfort_index, 1)
 
-def calc_change_rate(amount, timestamp):
-   
-   PAST_DELTA_TIME = datetime.timedelta(hours=1)
-   print(timestamp)
-   print(timestamp - PAST_DELTA_TIME)
+def calc_change_rate(current_data, past_hour_data):
+    """
+    現在のデータと過去1時間のデータから変化率を計算します。
 
-   past_data = BME280Data.query.filter(
-            BME280Data.timestamp >= timestamp,
-            BME280Data.timestamp <= timestamp - PAST_DELTA_TIME
-        ).all()
-   print(past_data)
-   return 
+    Args:
+        current_data: 最新のセンサーデータ
+        past_hour_data: 過去1時間のセンサーデータ
+
+    Returns:
+        dict: 変化率データ
+    """
+
+    change_rate_data = {
+        'temp': 0.0,
+        'press': 0.0,
+        'hum': 0.0,
+        'comfort_index': 0.0
+    }
+
+    if past_hour_data:
+        comfort_index = calc_comfort_index(current_data['temp'], current_data['hum'], current_data['press'])
+        
+        # 最新データと過去1時間前のデータを取得
+        latest_past_data = past_hour_data[1]
+        print(latest_past_data.timestamp)
+        latest_comfort_index = calc_comfort_index(latest_past_data.temperature, latest_past_data.humidity, latest_past_data.pressure)
+
+        # 変化率を計算
+        change_rate_data['temp'] = round((current_data['temp'] - latest_past_data.temperature) / latest_past_data.temperature * 100, 2)
+        change_rate_data['hum'] = round((current_data['hum'] - latest_past_data.humidity) / latest_past_data.humidity * 100, 2)
+        change_rate_data['press'] = round((current_data['press'] - latest_past_data.pressure) / latest_past_data.pressure * 100, 2)
+        change_rate_data['comfort_index'] = round((comfort_index - latest_comfort_index) / latest_comfort_index * 100, 2)
+
+    return change_rate_data
 
 def resolve_average_sensor_data(self, info):
     # BME280 センサーデータの平均値を計算する処理
@@ -83,34 +105,43 @@ class Query(graphene.ObjectType):
         ).all()
       
     def resolve_current_data(self, info):
-      """
-      BME280 センサーから最新のデータを測定し、CurrentDataAttribute オブジェクトとして返します。
+        """
+        BME280 センサーから最新のデータを測定し、CurrentDataAttribute オブジェクトとして返します。
 
-      Args:
-          info: GraphQL context information
+        Args:
+            info: GraphQL context information
 
-      Returns:
-          CurrentDataAttribute: センサーの最新のデータ
-      """
+        Returns:
+            CurrentDataAttribute: センサーの最新のデータ
+        """
 
-      # センサーからデータを読み取る
-      data = readData()
-      changerateSmaple = calc_change_rate(data, datetime.datetime.now())
+        # センサーからデータを読み取る
+        data = readData()
 
-      # 読み込んだデータを CurrentDataAttribute オブジェクトに変換する
-      current_data = CurrentDataAttribute(
-          currentTimestamp=datetime.datetime.now(),
-          currentTemperature=data['temp'],
-          changeRateTemperature=0.0,  # 変化率は未実装なのでとりあえず 0
-          currentPressure=data['press'],
-          changeRatePressure=0.0,  # 変化率は未実装なのでとりあえず 0
-          currentHumidity=data['hum'],
-          changeRateHumidity=0.0,  # 変化率は未実装なのでとりあえず 0
-          currentComfortIndex=calc_comfort_index(data['temp'], data['hum'], data['press']),  # 快適指数を計算
-          changeRateComfortIndex=0.0,  # 変化率は未実装なのでとりあえず 0
-      )
+        # 過去1時間のデータを取得
+        one_hour_ago = datetime.datetime.now() - datetime.timedelta(hours=1)
+        past_hour_data = BME280Data.query.filter(
+            BME280Data.timestamp >= one_hour_ago,
+            BME280Data.timestamp <= datetime.datetime.now()
+        ).all()
 
-      return current_data
+        # 変化率を計算
+        change_rate_data = calc_change_rate(data, past_hour_data)
+
+        # 読み込んだデータを CurrentDataAttribute オブジェクトに変換する
+        current_data = CurrentDataAttribute(
+            currentTimestamp=datetime.datetime.now(),
+            currentTemperature=data['temp'],
+            changeRateTemperature=change_rate_data['temp'],
+            currentPressure=data['press'],
+            changeRatePressure=change_rate_data['press'],
+            currentHumidity=data['hum'],
+            changeRateHumidity=change_rate_data['hum'],
+            currentComfortIndex=calc_comfort_index(data['temp'], data['hum'], data['press']),
+            changeRateComfortIndex=change_rate_data['comfort_index']
+        )
+
+        return current_data
 
 class Subscription(graphene.ObjectType):
     sensor_data_updated = graphene.Field(graphene.List(BME280), date_range=DateRangeInput())
