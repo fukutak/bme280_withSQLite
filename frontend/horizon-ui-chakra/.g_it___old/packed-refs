@@ -1,0 +1,13 @@
+# pack-refs with: peeled fully-peeled sorted 
+86b6c5908f18bffe2e9c5f4bfb8dd0c6de1c657e refs/remotes/origin/feature/black-friday
+395af11987efa8ca90781b0393cb5fd278149aa4 refs/remotes/origin/feature/docker
+a97abe1957a671c3ae73beff4d54c759156ac9a3 refs/remotes/origin/feature/live-preview
+9a6cca6fe1cdb70ce25b875800974b171ee2662d refs/remotes/origin/feature/v.1.0.1-live
+6167474255b966350f1800b7ebb617b85d72c92c refs/remotes/origin/gh-pages
+7ded5d4f888d04e34236c661f73d4ee67dd37f1f refs/remotes/origin/main
+d8f03758a36e071cad79ddeaa230b0a824bf5f92 refs/tags/v.1.1.0
+7ea30a2a4a74b54941b5ccf4ec78a29a35449d10 refs/tags/v1.0.0
+5232e882e2a369434a18afea11fa037de2e0aec1 refs/tags/v1.0.1
+709ed6bea6e3d49cd862148040a96913decd778a refs/tags/v1.2.0
+f742d66a1113dc85d6077826727044726f4d2045 refs/tags/v1.2.1
+652c9240c7f301ee652314c63cb353b0b2c2f20f refs/tags/v1.3.0
