@@ -88,7 +88,7 @@ query{
     todayCommits
     totalCommits
   }
-  sensorDataByDateRange(dateRange: { startDate: "2024-05-11T00:00:00", endDate: "2024-05-11T23:59:59" }) {
+  sensorDataByDateRange(dateRange: { startDate: $startDate, endDate: $endDate }) {
     temperature
     pressure
     humidity
@@ -97,7 +97,6 @@ query{
 }
 `;
 // sensorDataByDateRange(dateRange: { startDate: "2024-05-11T00:00:00", endDate: "2024-05-11T23:59:59" }) {
-// sensorDataByDateRange(dateRange: { startDate: $startDate, endDate: $endDate }) {
 
 export default function UserReports() {
   // Chakra Color Mode
@@ -125,49 +124,15 @@ export default function UserReports() {
   });
 
   if(loading){
-    // loading中の処理を記載
+    console.log("loading中の処理を記載");
   }
   if(error){
-    // error時の処理を記載
+    console.log("error時の処理を記載");
   }
-
-  useEffect(() => {
-    if(data){
-      // dataがあったときの処理を記載
-      if (data.currentData) {
-        console.log("来ているよ======");
-        console.log(data.currentData);
-        const {
-          currentComfortIndex,
-          changeRateComfortIndex,
-          currentHumidity,
-          changeRateHumidity,
-          currentPressure,
-          changeRatePressure,
-          currentTemperature,
-          changeRateTemperature,
-          todayCommits,
-          totalCommits
-        } = data.currentData;
-  
-        // Update individual state variables
-        setComfortIndexAmount(currentComfortIndex);
-        setComfortIndexChangeRate(changeRateComfortIndex);
-        setTemperatureAmount(currentTemperature);
-        setTemperatureChangeRate(changeRateTemperature);
-        setHumidityAmount(currentHumidity);
-        setHumidityChangeRate(changeRateHumidity);
-        setPressureAmount(currentPressure);
-        setPressureChangeRate(changeRatePressure);
-        setTodayCommits(todayCommits);
-        setTotalCommits(totalCommits);
-      } else {
-        console.warn('No current data found in response');
-        // Handle the case where no current data is available
-      }
-    }
-  }, [data]);
-  
+  if(data){
+    console.log("dataがあったときの処理を記載");
+    console.log(data);
+  }
 
   // grahpqlの処理を書く
   // client
@@ -233,7 +198,7 @@ export default function UserReports() {
         name="Comfort Index"
         value={comfortIndexAmount + ' / 100'}
         growth={comfortIndexChangeRate}
-        growthUnit="points"
+        growthUnit="%"
       />
       <MiniStatistics
         startContent={
@@ -247,7 +212,7 @@ export default function UserReports() {
         name="Temperature"
         value={temperatureAmount + ' °C'}
         growth={temperatureChangeRate}
-        growthUnit="°C"
+        growthUnit="%"
       />
       <MiniStatistics
         startContent={
@@ -275,7 +240,7 @@ export default function UserReports() {
         name="Pressure"
         value={pressureAmount + ' hPa'}
         growth={pressureChangeRate}
-        growthUnit="hPa"
+        growthUnit="%"
       />
       <MiniStatistics
         startContent={
@@ -287,7 +252,7 @@ export default function UserReports() {
           />
         }
         name="Today Commits"
-        value={todayCommits + " / 96"}
+        value={todayCommits}
       />
       <MiniStatistics
         startContent={
