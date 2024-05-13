@@ -1,7 +1,7 @@
 from graphene_sqlalchemy import SQLAlchemyConnectionField
 from graphene import relay
 import graphene
-from util.schema import BME280, BME280Data, CurrentData, CurrentDataAttribute
+from util.schema import BME280, BME280Data, BME280Attribute, CurrentData, CurrentDataAttribute
 import util.queries
 from util.use_bme280 import readData
 import datetime
@@ -66,11 +66,16 @@ def calc_change_rate(current_data, past_hour_data):
         latest_comfort_index = calc_comfort_index(latest_past_data.temperature, latest_past_data.humidity, latest_past_data.pressure)
 
         # 変化率を計算
-        change_rate_data['temp'] = round((current_data['temp'] - latest_past_data.temperature) / latest_past_data.temperature * 100, 2)
-        change_rate_data['hum'] = round((current_data['hum'] - latest_past_data.humidity) / latest_past_data.humidity * 100, 2)
-        change_rate_data['press'] = round((current_data['press'] - latest_past_data.pressure) / latest_past_data.pressure * 100, 2)
-        change_rate_data['comfort_index'] = round((comfort_index - latest_comfort_index) / latest_comfort_index * 100, 2)
+        # change_rate_data['temp'] = round((current_data['temp'] - latest_past_data.temperature) / latest_past_data.temperature * 100, 1)
+        # change_rate_data['hum'] = round((current_data['hum'] - latest_past_data.humidity) / latest_past_data.humidity * 100, 1)
+        # change_rate_data['press'] = round(current_data['press'] - latest_past_data.pressure, 1)
+        # change_rate_data['comfort_index'] = round((comfort_index - latest_comfort_index) / latest_comfort_index * 100, 1)
 
+        # 差分を計算
+        change_rate_data['temp'] = round(current_data['temp'] - latest_past_data.temperature, 1)
+        change_rate_data['hum'] = round(current_data['hum'] - latest_past_data.humidity, 1)
+        change_rate_data['press'] = round(current_data['press'] - latest_past_data.pressure, 1)
+        change_rate_data['comfort_index'] = round(comfort_index - latest_comfort_index, 1)
     return change_rate_data
 
 def resolve_average_sensor_data(self, info):
@@ -88,7 +93,7 @@ def resolve_average_sensor_data(self, info):
 class Query(graphene.ObjectType):
     node = relay.Node.Field()
     sensor_list = SQLAlchemyConnectionField(BME280)
-    sensor_data_by_date_range = graphene.List(BME280, date_range=DateRangeInput())
+    sensor_data_by_date_range = graphene.List(BME280Attribute, date_range=DateRangeInput())
     current_data = graphene.Field(CurrentDataAttribute)
 
     def resolve_average_sensor_data(self, info):
@@ -99,10 +104,28 @@ class Query(graphene.ObjectType):
         end_date = date_range.get('end_date')
 
         # 期間内のデータをフィルタリングして返す
-        return BME280Data.query.filter(
+        # return BME280Data.query.filter(
+        #     BME280Data.timestamp >= start_date,
+        #     BME280Data.timestamp <= end_date
+        # ).all()
+        data = BME280Data.query.filter(
             BME280Data.timestamp >= start_date,
             BME280Data.timestamp <= end_date
         ).all()
+        enhanced_data = []
+        for record in data:
+            comfort_index = calc_comfort_index(record.temperature, record.humidity, record.pressure)
+            enhanced_record = {
+                "id": record.id,
+                "temperature": record.temperature,
+                "pressure": record.pressure,
+                "humidity": record.humidity,
+                "timestamp": record.timestamp,
+                "room_id": record.room_id,
+                "comfortIndex": comfort_index
+            }
+            enhanced_data.append(enhanced_record)
+        return enhanced_data
       
     def resolve_current_data(self, info):
         """
@@ -128,19 +151,28 @@ class Query(graphene.ObjectType):
         # 変化率を計算
         change_rate_data = calc_change_rate(data, past_hour_data)
 
+       # 今日記録されたレコード数
+        today_commits = BME280Data.query.filter(
+            BME280Data.timestamp >= datetime.datetime.now().date()
+        ).count()
+
+        # 全レコード数
+        total_commits = BME280Data.query.count()
+
         # 読み込んだデータを CurrentDataAttribute オブジェクトに変換する
         current_data = CurrentDataAttribute(
             currentTimestamp=datetime.datetime.now(),
-            currentTemperature=data['temp'],
+            currentTemperature=round(data['temp'], 1),
             changeRateTemperature=change_rate_data['temp'],
-            currentPressure=data['press'],
+            currentPressure=round(data['press'], 1),
             changeRatePressure=change_rate_data['press'],
-            currentHumidity=data['hum'],
+            currentHumidity=round(data['hum'], 1),
             changeRateHumidity=change_rate_data['hum'],
             currentComfortIndex=calc_comfort_index(data['temp'], data['hum'], data['press']),
-            changeRateComfortIndex=change_rate_data['comfort_index']
+            changeRateComfortIndex=change_rate_data['comfort_index'],
+            todayCommits=today_commits,
+            totalCommits=total_commits
         )
-
         return current_data
 
 class Subscription(graphene.ObjectType):
