@@ -63,7 +63,7 @@ function getLineChartOptions(categories) {
       type: "line",
     },
     xaxis: {
-      type: "time",
+      type: "datetime",
       categories: categories, // Use the categories variable here
       labels: {
         style: {
@@ -105,98 +105,99 @@ function getLineChartOptions(categories) {
 
 function getLineChartOptionsTimeStamps() {
   return {
-    chart: {
-      height: 380,
-      width: "100%",
-      type: "area",
-      animations: {
-        initialAnimation: {
-          enabled: false
-        }
-      }
-    },
-    xaxis: {
-      type: 'datetime'
-    }
-  }
   //   chart: {
-  //     toolbar: {
-  //       show: false,
-  //     },
-  //     dropShadow: {
-  //       enabled: true,
-  //       top: 13,
-  //       left: 0,
-  //       blur: 10,
-  //       opacity: 0.1,
-  //       color: "#4318FF",
-  //     },
-  //   },
-  //   colors: ["#4318FF", "#39B8FF"],
-  //   markers: {
-  //     size: 0,
-  //     colors: "white",
-  //     strokeColors: "#7551FF",
-  //     strokeWidth: 3,
-  //     strokeOpacity: 0.9,
-  //     strokeDashArray: 0,
-  //     fillOpacity: 1,
-  //     discrete: [],
-  //     shape: "circle",
-  //     radius: 2,
-  //     offsetX: 0,
-  //     offsetY: 0,
-  //     showNullDataPoints: true,
-  //   },
-  //   tooltip: {
-  //     theme: "dark",
-  //   },
-  //   dataLabels: {
-  //     enabled: false,
-  //   },
-  //   stroke: {
-  //     curve: "smooth",
-  //     type: "line",
+  //     height: 380,
+  //     width: "100%",
+  //     type: "area",
+  //     animations: {
+  //       initialAnimation: {
+  //         enabled: false
+  //       }
+  //     }
   //   },
   //   xaxis: {
-  //     type: "datetime",
-  //     // categories: categories, // Use the categories variable here
-  //     labels: {
-  //       style: {
-  //         colors: "#A3AED0",
-  //         fontSize: "12px",
-  //         fontWeight: "500",
-  //       },
-  //     },
-  //     axisBorder: {
-  //       show: false,
-  //     },
-  //     axisTicks: {
-  //       show: true,
-  //     },
-  //   },
-  //   yaxis: {
-  //     show: true,
-  //     labels: {
-  //       style: {
-  //         colors: "#A3AED0",
-  //         fontSize: "12px",
-  //         fontWeight: "500",
-  //       },
-  //     },
-  //   },
-  //   legend: {
-  //     show: false,
-  //   },
-  //   grid: {
-  //     show: false,
-  //     column: {
-  //       color: ["#7551FF", "#39B8FF"],
-  //       opacity: 0.5,
-  //     },
-  //   },
-  //   color: ["#7551FF", "#39B8FF"],
-  // };
+  //     type: 'datetime'
+  //   }
+  // }
+    chart: {
+      toolbar: {
+        show: false,
+      },
+      dropShadow: {
+        enabled: true,
+        top: 13,
+        left: 0,
+        blur: 10,
+        opacity: 0.1,
+        color: "#4318FF",
+      },
+    },
+    colors: ["#4318FF", "#39B8FF"],
+    markers: {
+      size: 0,
+      colors: "white",
+      strokeColors: "#7551FF",
+      strokeWidth: 3,
+      strokeOpacity: 0.9,
+      strokeDashArray: 0,
+      fillOpacity: 1,
+      discrete: [],
+      shape: "circle",
+      radius: 2,
+      offsetX: 0,
+      offsetY: 0,
+      showNullDataPoints: true,
+    },
+    tooltip: {
+      theme: "dark",
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    stroke: {
+      curve: "smooth",
+      type: "line",
+    },
+    xaxis: {
+      type: "datetime",
+      // categories: categories, // Use the categories variable here
+      labels: {
+        datetimeUTC: false,
+        style: {
+          colors: "#A3AED0",
+          fontSize: "12px",
+          fontWeight: "500",
+        },
+      },
+      axisBorder: {
+        show: false,
+      },
+      axisTicks: {
+        show: true,
+      },
+    },
+    yaxis: {
+      show: true,
+      labels: {
+        style: {
+          colors: "#A3AED0",
+          fontSize: "12px",
+          fontWeight: "500",
+        },
+      },
+    },
+    legend: {
+      show: false,
+    },
+    grid: {
+      show: false,
+      column: {
+        color: ["#7551FF", "#39B8FF"],
+        opacity: 0.5,
+      },
+    },
+    color: ["#7551FF", "#39B8FF"],
+  };
 }
 
 function generateStringList(length) {
@@ -207,13 +208,23 @@ function generateStringList(length) {
   return result;
 }
 
-function extractTimeFromDateTimeList(dataList) {
+function extractTimeFromDateTimeList(dataList) { // YYYY-MM-ddTHH:mm:ss ->HH:mm:ss 
   const timeList = [];
+  console.log(dataList)
   for (const dateTimeString of dataList) {
     const timeString = dateTimeString.split('T')[1].split('.')[0];
     timeList.push(timeString);
   }
   return timeList;
+}
+
+function formatTimestampsToHHMM(timestamps) {// YYYY-MM-ddTHH:mm:ss ->HH:mm
+  return timestamps.map((timestamp) => {
+    const date = new Date(timestamp);
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  });
 }
 
 function convertToTimestamps(list) {
@@ -240,20 +251,13 @@ function mergeLists(timestamps, yData) {
 
 export default function TotalSpent(props) {
   const { yData, xData, ...rest } = props;
-  // const [chartData, setChartData] = useState([{name: "test", data: [[1324508400000, 34], [1324594800000, 54]]}]); // [timestamp, amount]
-  // const [chartXData, setChartXData] = useState(getLineChartOptionsTimeStamps([1,2,3,4,5,6,7]))
-  const [chartData, setChartData] = useState([{name: "test", data: [1,2,3,4,5,6,7]}]); // [timestamp, amount]
-  const [chartXData, setChartXData] = useState(getLineChartOptions([1,2,3,4,5,6,7]))
+  const [chartData, setChartData] = useState([{name: "test", data: [1]}]); // [timestamp, amount]
+  const [chartXData, setChartXData] = useState(getLineChartOptionsTimeStamps());
   useEffect(() => {
     const timestamps = convertToTimestamps(xData);
-    // setChartData({name: "test", data: mergeLists(timestamps, yData)})
-    // setChartXData([]);
-    setChartData([{name: xData[0], data: yData}])
-    setChartXData(getLineChartOptions(xData));
+    setChartData([{name: "test", data: mergeLists(xData, yData)}])
   }, [yData]);
 
-
-  // Chakra Color Mode
 
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const textColorSecondary = useColorModeValue("secondaryGray.600", "white");
