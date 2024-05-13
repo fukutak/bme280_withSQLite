@@ -112,8 +112,8 @@ export default function UserReports() {
   const [pressureTimeSeries, setPressureTimeSeries] = useState([]);
   const [timeStamps, setTimeStamps] = useState([]);
 
-  const [startDate, setStartDate] = useState("2024-05-12T00:00:00");
-  const [endDate, setEndDate] = useState("2024-05-12T23:59:59");
+  const [startDate, setStartDate] = useState("2024-05-13T00:00:00");
+  const [endDate, setEndDate] = useState("2024-05-13T23:59:59");
 
   const { loading, error, data } = useQuery(GET_SENSOR_DATA, {
     variables: { startDate, endDate },
@@ -208,7 +208,7 @@ export default function UserReports() {
             icon={<Icon w="32px" h="32px" as={MdLockClock} color={brandColor} />}
           />
         }
-        name="TimeStamp"
+        name="Final Fetch Time"
         value={currentTime}
       />
       <MiniStatistics
@@ -278,6 +278,36 @@ export default function UserReports() {
         }
         name="Today Commits"
         value={todayCommits + " / 96"}
+      />
+    </SimpleGrid>
+    <SimpleGrid
+      columns={{ base: 1, md: 2, lg: 2, "2xl": 2 }}
+      gap="20px"
+      mb="20px"
+    >
+      <MiniStatistics
+        startContent={
+          <IconBox
+            w="56px"
+            h="56px"
+            bg={boxBg}
+            icon={<Icon w="32px" h="32px" as={MdWater} color={brandColor} />}
+          />
+        }
+        name="Start Date"
+        value={startDate}
+      />
+      <MiniStatistics
+        startContent={
+          <IconBox
+            w="56px"
+            h="56px"
+            bg={boxBg}
+            icon={<Icon w="32px" h="32px" as={MdWater} color={brandColor} />}
+          />
+        }
+        name="End Date"
+        value={endDate}
       />
     </SimpleGrid>
 
