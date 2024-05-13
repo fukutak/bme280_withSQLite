@@ -52,7 +52,7 @@ export default function Default(props) {
             }}>
             {value}
           </StatNumber>
-          {growth ? (
+          {growth != null ? (
             <Flex align='center'>
               <Text color={growthColor} fontSize='xs' fontWeight='700' me='5px'>
                 {growth > 0 ? '+' : ''}{growth} {growthUnit ? growthUnit : ''}

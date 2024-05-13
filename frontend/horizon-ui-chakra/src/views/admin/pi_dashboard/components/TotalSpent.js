@@ -249,13 +249,45 @@ function mergeLists(timestamps, yData) {
   return mergeData;
 }
 
+function calculateAverageAndStdDev(numbers) {
+  const average = calculateAverage(numbers);
+  const stdDev = calculateStdDev(numbers, average);
+  return {
+    average: roundToSignificant(average, 1),
+    stdDev: roundToSignificant(stdDev, 1),
+  };
+}
+
+function calculateAverage(numbers) {
+  const sum = numbers.reduce((total, num) => total + num, 0);
+  const average = sum / numbers.length;
+  return average;
+}
+
+function calculateStdDev(numbers, average) {
+  const squaredDeviations = numbers.map((num) => Math.pow(num - average, 2));
+  const variance = squaredDeviations.reduce((total, sqDev) => total + sqDev, 0) / numbers.length;
+  const stdDev = Math.sqrt(variance);
+  return stdDev;
+}
+
+function roundToSignificant(number, sigFigs) {
+  if (number === 0) return 0;
+  const mantissa = Math.floor(Math.log10(Math.abs(number)));
+  const exponent = mantissa < 0 ? mantissa + 1 : 0;
+  const significantDigits = exponent + sigFigs;
+  return Number(number.toFixed(significantDigits - exponent));
+}
+
 export default function TotalSpent(props) {
   const { yData, xData, ...rest } = props;
   const [chartData, setChartData] = useState([{name: "test", data: [1]}]); // [timestamp, amount]
   const [chartXData, setChartXData] = useState(getLineChartOptionsTimeStamps());
+  const [metaData, setMetaData] = useState({average: NaN, stdDev: NaN})
   useEffect(() => {
     const timestamps = convertToTimestamps(xData);
-    setChartData([{name: "test", data: mergeLists(xData, yData)}])
+    setChartData([{name: "test", data: mergeLists(xData, yData)}]);
+    setMetaData(calculateAverageAndStdDev(yData));
   }, [yData]);
 
 
@@ -282,6 +314,14 @@ export default function TotalSpent(props) {
       {...rest}>
       <Flex justify='space-between' ps='0px' pe='20px' pt='5px'>
         <Flex align='center' w='100%'>
+        <Text
+          me='auto'
+          color={textColor}
+          fontSize='xl'
+          fontWeight='700'
+          lineHeight='100%'>
+          {props.title}
+        </Text>
           <Button
             bg={boxBg}
             fontSize='sm'
@@ -293,7 +333,7 @@ export default function TotalSpent(props) {
               color={textColorSecondary}
               me='4px'
             />
-            This month
+            add Day
           </Button>
           <Button
             ms='auto'
@@ -320,7 +360,7 @@ export default function TotalSpent(props) {
             textAlign='start'
             fontWeight='700'
             lineHeight='100%'>
-            $37.5K
+            {metaData.average + props.unit}
           </Text>
           <Flex align='center' mb='20px'>
             <Text
@@ -329,7 +369,31 @@ export default function TotalSpent(props) {
               fontWeight='500'
               mt='4px'
               me='12px'>
-              Total Spent
+              average
+            </Text>
+            {/* <Flex align='center'>
+              <Icon as={RiArrowUpSFill} color='green.500' me='2px' mt='2px' />
+              <Text color='green.500' fontSize='sm' fontWeight='700'>
+                +2.45%
+              </Text>
+            </Flex> */}
+          </Flex>
+          <Text
+            color={textColor}
+            fontSize='34px'
+            textAlign='start'
+            fontWeight='700'
+            lineHeight='100%'>
+            {"± " + metaData.stdDev + props.unit}
+          </Text>
+          <Flex align='center' mb='20px'>
+            <Text
+              color='secondaryGray.600'
+              fontSize='sm'
+              fontWeight='500'
+              mt='4px'
+              me='12px'>
+              stdDev
             </Text>
             <Flex align='center'>
               <Icon as={RiArrowUpSFill} color='green.500' me='2px' mt='2px' />
@@ -338,18 +402,15 @@ export default function TotalSpent(props) {
               </Text>
             </Flex>
           </Flex>
-
           <Flex align='center'>
             <Icon as={IoCheckmarkCircle} color='green.500' me='4px' />
             <Text color='green.500' fontSize='md' fontWeight='700'>
-              On track
+              Success
             </Text>
           </Flex>
         </Flex>
-        <Box minH='260px' minW='75%' mt='auto'>
+        <Box minH='260px' minW='80%' mt='auto'>
           <LineChart
-            // chartData={lineChartDataTotalSpent}
-            // chartOptions={lineChartOptionsTotalSpent}
             chartData={chartData}
             chartOptions={chartXData}
           />

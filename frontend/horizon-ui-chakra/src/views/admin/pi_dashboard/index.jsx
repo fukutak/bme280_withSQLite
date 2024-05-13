@@ -1,25 +1,3 @@
-/*!
-  _   _  ___  ____  ___ ________  _   _   _   _ ___   
- | | | |/ _ \|  _ \|_ _|__  / _ \| \ | | | | | |_ _| 
- | |_| | | | | |_) || |  / / | | |  \| | | | | || | 
- |  _  | |_| |  _ < | | / /| |_| | |\  | | |_| || |
- |_| |_|\___/|_| \_\___/____\___/|_| \_|  \___/|___|
-                                                                                                                                                                                                                                                                                                                                       
-=========================================================
-* Horizon UI - v1.1.0
-=========================================================
-
-* Product Page: https://www.horizon-ui.com/
-* Copyright 2023 Horizon UI (https://www.horizon-ui.com/)
-
-* Designed and Coded by Simmmple
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
-
 // Chakra imports
 import {
   Avatar,
@@ -68,6 +46,7 @@ import tableDataComplex from "views/admin/default/variables/tableDataComplex.jso
 import { useQuery, useMutation, ApolloClient, InMemoryCache, ApolloProvider, gql } from '@apollo/client';
 import { CatchingPokemonSharp, ConnectingAirportsOutlined } from "@mui/icons-material";
 import CurrentDashboard from "views/admin/pi_dashboard/components/CurrentDashboard";
+// import { useInterval } from 'react-use';
 
 // const client = new ApolloClient({
 //   uri: 'http://localhost:5000/graphql', // Replace with your actual GraphQL server endpoint
@@ -75,28 +54,28 @@ import CurrentDashboard from "views/admin/pi_dashboard/components/CurrentDashboa
 // });
 
 const GET_SENSOR_DATA = gql`
-query{
-  currentData{
-    currentTimestamp
-    currentTemperature
-    changeRateTemperature
-    currentPressure
-    changeRatePressure
-    currentHumidity
-    changeRateHumidity
-    currentComfortIndex
-    changeRateComfortIndex
-    todayCommits
-    totalCommits
+  query GetSensorData($startDate: DateTime!, $endDate: DateTime!) {
+    currentData {
+      currentTimestamp
+      currentTemperature
+      changeRateTemperature
+      currentPressure
+      changeRatePressure
+      currentHumidity
+      changeRateHumidity
+      currentComfortIndex
+      changeRateComfortIndex
+      todayCommits
+      totalCommits
+    }
+    sensorDataByDateRange(dateRange: { startDate: $startDate, endDate: $endDate }) {
+      temperature
+      pressure
+      humidity
+      comfortIndex
+      timestamp
+    }
   }
-  sensorDataByDateRange(dateRange: { startDate: "2024-05-13T0:00:00", endDate: "2024-05-13T23:59:59" }) {
-    temperature
-    pressure
-    humidity
-    comfortIndex
-    timestamp
-  }
-}
 `;
 // sensorDataByDateRange(dateRange: { startDate: "2024-05-11T00:00:00", endDate: "2024-05-11T23:59:59" }) {
 // sensorDataByDateRange(dateRange: { startDate: $startDate, endDate: $endDate }) {
@@ -133,9 +112,8 @@ export default function UserReports() {
   const [pressureTimeSeries, setPressureTimeSeries] = useState([]);
   const [timeStamps, setTimeStamps] = useState([]);
 
-
-  const [startDate, setStartDate] = useState("2024-05-11T00:00:00");
-  const [endDate, setEndDate] = useState("2024-05-11T23:59:59");
+  const [startDate, setStartDate] = useState("2024-05-12T00:00:00");
+  const [endDate, setEndDate] = useState("2024-05-12T23:59:59");
 
   const { loading, error, data } = useQuery(GET_SENSOR_DATA, {
     variables: { startDate, endDate },
@@ -303,12 +281,12 @@ export default function UserReports() {
       />
     </SimpleGrid>
 
-      <SimpleGrid columns={{ base: 1, md: 2, xl: 2 }} gap='20px' mb='20px'>
+      <SimpleGrid columns={{ base: 1, md: 1, xl: 2 }} gap='20px' mb='20px'>
         {/* <TotalSpent yData={comfortTimeSeries} xData={timeStamps} /> */}
-        <TotalSpent yData={comfortIndicesTimeSeries} xData={timeStamps} />
-        {/* <TotalSpent />
-        <TotalSpent />
-        <TotalSpent /> */}
+        <TotalSpent yData={comfortIndicesTimeSeries} xData={timeStamps} title={"Comfort Index"} unit=" p"/>
+        <TotalSpent yData={temperatureTimeSeries} xData={timeStamps} title={"Temperature"} unit=" °C"/>
+        <TotalSpent yData={humidityTimeSeries} xData={timeStamps} title={"Humidity"} unit=" %"/>
+        <TotalSpent yData={pressureTimeSeries} xData={timeStamps} title={"Pressure"} unit=" hPa"/>
         <WeeklyRevenue />
         <WeeklyRevenue />
         <WeeklyRevenue />
