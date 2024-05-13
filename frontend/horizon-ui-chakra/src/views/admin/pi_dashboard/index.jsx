@@ -47,7 +47,8 @@ import {
   MdDeviceThermostat,
   MdThermostat,
   MdCloud,
-  MdAccessibility
+  MdAccessibility,
+  MdLockClock
 } from "react-icons/md";
 import CheckTable from "views/admin/pi_dashboard/components/CheckTable";
 import ComplexTable from "views/admin/pi_dashboard/components/ComplexTable";
@@ -65,7 +66,7 @@ import tableDataComplex from "views/admin/default/variables/tableDataComplex.jso
 
 // add myself
 import { useQuery, useMutation, ApolloClient, InMemoryCache, ApolloProvider, gql } from '@apollo/client';
-import { ConnectingAirportsOutlined } from "@mui/icons-material";
+import { CatchingPokemonSharp, ConnectingAirportsOutlined } from "@mui/icons-material";
 import CurrentDashboard from "views/admin/pi_dashboard/components/CurrentDashboard";
 
 // const client = new ApolloClient({
@@ -88,10 +89,11 @@ query{
     todayCommits
     totalCommits
   }
-  sensorDataByDateRange(dateRange: { startDate: "2024-05-11T00:00:00", endDate: "2024-05-11T23:59:59" }) {
+  sensorDataByDateRange(dateRange: { startDate: "2024-05-13T0:00:00", endDate: "2024-05-13T23:59:59" }) {
     temperature
     pressure
     humidity
+    comfortIndex
     timestamp
   }
 }
@@ -104,6 +106,8 @@ export default function UserReports() {
   const brandColor = useColorModeValue("brand.500", "white");
   const boxBg = useColorModeValue("secondaryGray.300", "whiteAlpha.100");
 
+  // setCurrentData
+  const [currentTime, setCurrentTimeStamp] = useState('');
   const [comfortIndexAmount, setComfortIndexAmount] = useState(NaN);
   const [comfortIndexChangeRate, setComfortIndexChangeRate] = useState(NaN);
   const [temperatureAmount, setTemperatureAmount] = useState(NaN);
@@ -115,8 +119,21 @@ export default function UserReports() {
   const [todayCommits, setTodayCommits] = useState(NaN);
   const [totalCommits, setTotalCommits] = useState(NaN);
 
+  // setTimeSeriesData
+  const [comfortIndicesTimeSeries, setComfortIndicesTimeSeries] = useState([]);
+  //   const [comfortIndicesTimeSeries, setComfortIndicesTimeSeries] = useState([
+  //     {
+  //       name: "",
+  //       data: [],
+  //     }
+  //   ]
+  // );
+  const [temperatureTimeSeries, setTemperatureTimeSeries] = useState([]);
+  const [humidityTimeSeries, setHumidityTimeSeries] = useState([]);
+  const [pressureTimeSeries, setPressureTimeSeries] = useState([]);
+  const [timeStamps, setTimeStamps] = useState([]);
 
-  const [sensorDataByDateRange, setSensorDataByDateRange] = useState(null);
+
   const [startDate, setStartDate] = useState("2024-05-11T00:00:00");
   const [endDate, setEndDate] = useState("2024-05-11T23:59:59");
 
@@ -135,9 +152,8 @@ export default function UserReports() {
     if(data){
       // dataがあったときの処理を記載
       if (data.currentData) {
-        console.log("来ているよ======");
-        console.log(data.currentData);
         const {
+          currentTimestamp,
           currentComfortIndex,
           changeRateComfortIndex,
           currentHumidity,
@@ -151,6 +167,15 @@ export default function UserReports() {
         } = data.currentData;
   
         // Update individual state variables
+        const formattedDate = new Date(currentTimestamp).toLocaleString('ja-JP', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        });
+        setCurrentTimeStamp(formattedDate);
         setComfortIndexAmount(currentComfortIndex);
         setComfortIndexChangeRate(changeRateComfortIndex);
         setTemperatureAmount(currentTemperature);
@@ -165,55 +190,30 @@ export default function UserReports() {
         console.warn('No current data found in response');
         // Handle the case where no current data is available
       }
+      if(data.sensorDataByDateRange){
+        const comfortIndices = [];
+        const temperatures = [];
+        const humidities = [];
+        const pressures = [];
+        const timestamps = [];
+
+        data.sensorDataByDateRange.forEach(entry => {
+          comfortIndices.push(entry.comfortIndex);
+          temperatures.push(entry.temperature);
+          humidities.push(entry.humidity);
+          pressures.push(entry.pressure);
+          timestamps.push(entry.timestamp);
+        });
+        // setComfortIndicesTimeSeries([{name: timestamps[0], data: comfortIndices.slice(0,7)}])
+        setComfortIndicesTimeSeries(comfortIndices);
+        setTemperatureTimeSeries(temperatures);
+        setHumidityTimeSeries(humidities);
+        setPressureTimeSeries(pressures);
+        setTimeStamps(timestamps);
+      }
     }
   }, [data]);
   
-
-  // grahpqlの処理を書く
-  // client
-  // .query({
-  //   query: GET_SENSOR_DATA
-  // })
-  // .then((result) => {
-  //   if (result.data) {
-  //     if (result.data.currentData) {
-  //       const {
-  //         currentComfortIndex,
-  //         changeRateComfortIndex,
-  //         currentHumidity,
-  //         changeRateHumidity,
-  //         currentPressure,
-  //         changeRatePressure,
-  //         currentTemperature,
-  //         changeRateTemperature,
-  //         todayCommits,
-  //         totalCommits
-  //       } = result.data.currentData;
-
-  //       // Update individual state variables
-  //       setComfortIndexAmount(currentComfortIndex);
-  //       setComfortIndexChangeRate(changeRateComfortIndex);
-  //       setTemperatureAmount(currentTemperature);
-  //       setTemperatureChangeRate(changeRateTemperature);
-  //       setHumidityAmount(currentHumidity);
-  //       setHumidityChangeRate(changeRateHumidity);
-  //       setPressureAmount(currentPressure);
-  //       setPressureChangeRate(changeRatePressure);
-  //       setTodayCommits(todayCommits);
-  //       setTotalCommits(totalCommits);
-  //     } else {
-  //       console.warn('No current data found in response');
-  //       // Handle the case where no current data is available
-  //     }
-  //   } else if (result.errors) {
-  //     console.error('Errors:', result.errors);
-  //   }
-  // })
-  // .catch((error) => {
-  //   console.warn("リクエストエラー:" + error);
-  //   console.log(GET_SENSOR_DATA)
-  // });
-
   return (
     <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
     <SimpleGrid
@@ -227,13 +227,25 @@ export default function UserReports() {
             w="56px"
             h="56px"
             bg={boxBg}
+            icon={<Icon w="32px" h="32px" as={MdLockClock} color={brandColor} />}
+          />
+        }
+        name="TimeStamp"
+        value={currentTime}
+      />
+      <MiniStatistics
+        startContent={
+          <IconBox
+            w="56px"
+            h="56px"
+            bg={boxBg}
             icon={<Icon w="32px" h="32px" as={MdAccessibility} color={brandColor} />}
           />
         }
         name="Comfort Index"
         value={comfortIndexAmount + ' / 100'}
         growth={comfortIndexChangeRate}
-        growthUnit="points"
+        growthUnit="p"
       />
       <MiniStatistics
         startContent={
@@ -289,25 +301,14 @@ export default function UserReports() {
         name="Today Commits"
         value={todayCommits + " / 96"}
       />
-      <MiniStatistics
-        startContent={
-          <IconBox
-            w="56px"
-            h="56px"
-            bg={boxBg}
-            icon={<Icon w="32px" h="32px" as={MdFileCopy} color={brandColor} />}
-          />
-        }
-        name="Total Commits"
-        value={totalCommits}
-      />
     </SimpleGrid>
 
       <SimpleGrid columns={{ base: 1, md: 2, xl: 2 }} gap='20px' mb='20px'>
+        {/* <TotalSpent yData={comfortTimeSeries} xData={timeStamps} /> */}
+        <TotalSpent yData={comfortIndicesTimeSeries} xData={timeStamps} />
+        {/* <TotalSpent />
         <TotalSpent />
-        <TotalSpent />
-        <TotalSpent />
-        <TotalSpent />
+        <TotalSpent /> */}
         <WeeklyRevenue />
         <WeeklyRevenue />
         <WeeklyRevenue />
@@ -330,6 +331,18 @@ export default function UserReports() {
           <MiniCalendar h='100%' minW='100%' selectRange={false} />
         </SimpleGrid>
       </SimpleGrid>
+      <MiniStatistics
+        startContent={
+          <IconBox
+            w="56px"
+            h="56px"
+            bg={boxBg}
+            icon={<Icon w="32px" h="32px" as={MdFileCopy} color={brandColor} />}
+          />
+        }
+        name="Total Commits"
+        value={totalCommits}
+      />
     </Box>
   );
 }
