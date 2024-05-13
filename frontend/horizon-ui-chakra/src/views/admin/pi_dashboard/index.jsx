@@ -46,12 +46,9 @@ import tableDataComplex from "views/admin/default/variables/tableDataComplex.jso
 import { useQuery, useMutation, ApolloClient, InMemoryCache, ApolloProvider, gql } from '@apollo/client';
 import { CatchingPokemonSharp, ConnectingAirportsOutlined } from "@mui/icons-material";
 import CurrentDashboard from "views/admin/pi_dashboard/components/CurrentDashboard";
-// import { useInterval } from 'react-use';
-
-// const client = new ApolloClient({
-//   uri: 'http://localhost:5000/graphql', // Replace with your actual GraphQL server endpoint
-//   cache: new InMemoryCache(),
-// });
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 const GET_SENSOR_DATA = gql`
   query GetSensorData($startDate: DateTime!, $endDate: DateTime!) {
@@ -100,20 +97,28 @@ export default function UserReports() {
 
   // setTimeSeriesData
   const [comfortIndicesTimeSeries, setComfortIndicesTimeSeries] = useState([]);
-  //   const [comfortIndicesTimeSeries, setComfortIndicesTimeSeries] = useState([
-  //     {
-  //       name: "",
-  //       data: [],
-  //     }
-  //   ]
-  // );
   const [temperatureTimeSeries, setTemperatureTimeSeries] = useState([]);
   const [humidityTimeSeries, setHumidityTimeSeries] = useState([]);
   const [pressureTimeSeries, setPressureTimeSeries] = useState([]);
   const [timeStamps, setTimeStamps] = useState([]);
 
-  const [startDate, setStartDate] = useState("2024-05-13T00:00:00");
-  const [endDate, setEndDate] = useState("2024-05-13T23:59:59");
+  // const [startDate, setStartDate] = useState("2024-05-13T00:00:00");
+  // const [endDate, setEndDate] = useState("2024-05-13T23:59:59");
+  const [startDate, setStartDate] = useState(() => {
+    const today = new Date();
+    const todayJapan = new Date(today.getTime()); // Adjust for Japan timezone (UTC+9)
+    const todayStart = new Date(todayJapan.getFullYear(), todayJapan.getMonth(), todayJapan.getDate());
+    todayStart.setHours(9, 0, 0, 0); // 時差を加味して9時間プラス
+    return todayStart.toISOString();
+  });
+  
+  const [endDate, setEndDate] = useState(() => {
+    const today = new Date();
+    const todayJapan = new Date(today.getTime()); // Adjust for Japan timezone (UTC+9)
+    const todayEnd = new Date(todayJapan.getFullYear(), todayJapan.getMonth(), todayJapan.getDate());
+    todayEnd.setHours(23+9, 59, 59, 999); // Set to 23:59:59.999
+    return todayEnd.toISOString({ timeZone: 'Asia/Tokyo' });
+  });
 
   const { loading, error, data } = useQuery(GET_SENSOR_DATA, {
     variables: { startDate, endDate },
@@ -208,7 +213,7 @@ export default function UserReports() {
             icon={<Icon w="32px" h="32px" as={MdLockClock} color={brandColor} />}
           />
         }
-        name="Final Fetch Time"
+        name="Fetch DateTtime"
         value={currentTime}
       />
       <MiniStatistics
@@ -310,7 +315,6 @@ export default function UserReports() {
         value={endDate}
       />
     </SimpleGrid>
-
       <SimpleGrid columns={{ base: 1, md: 1, xl: 2 }} gap='20px' mb='20px'>
         {/* <TotalSpent yData={comfortTimeSeries} xData={timeStamps} /> */}
         <TotalSpent yData={comfortIndicesTimeSeries} xData={timeStamps} title={"Comfort Index"} unit=" p"/>

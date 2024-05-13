@@ -9,7 +9,10 @@ import { ChakraProvider } from '@chakra-ui/react';
 import theme from 'theme/theme';
 import { ThemeEditorProvider } from '@hypertheme-editor/chakra-ui';
 
+// add myself
 import { useQuery, useMutation, ApolloClient, InMemoryCache, ApolloProvider, gql } from '@apollo/client';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 
 const client = new ApolloClient({
 	uri: 'http://localhost:5000/graphql', // Replace with your actual GraphQL server endpoint
@@ -22,6 +25,7 @@ root.render(
 	<ChakraProvider theme={theme}>
 		<React.StrictMode>
 			<ThemeEditorProvider>
+			<LocalizationProvider dateAdapter={AdapterDayjs}>
 			<ApolloProvider client={client}>
 				<HashRouter>
 					<Switch>
@@ -32,6 +36,7 @@ root.render(
 					</Switch>
 				</HashRouter>
 				</ApolloProvider>
+				</LocalizationProvider>
 			</ThemeEditorProvider>
 		</React.StrictMode>
 	</ChakraProvider>,
