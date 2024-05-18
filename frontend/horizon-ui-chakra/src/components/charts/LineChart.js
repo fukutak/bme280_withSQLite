@@ -4,6 +4,7 @@ import ReactApexChart from "react-apexcharts";
 class LineChart extends React.Component {
   constructor(props) {
     super(props);
+
     this.state = {
       chartData: [],
       chartOptions: {},
@@ -20,10 +21,8 @@ class LineChart extends React.Component {
   render() {
     return (
       <ReactApexChart
-        // options={this.state.chartOptions}
-        // series={this.state.chartData}
-        options={this.props.chartOptions}
-        series={this.props.chartData}
+        options={this.state.chartOptions}
+        series={this.state.chartData}
         type='line'
         width='100%'
         height='100%'

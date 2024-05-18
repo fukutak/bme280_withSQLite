@@ -23,7 +23,7 @@ export default function Default(props) {
     growthColor = 'green.500'; // 正の場合は緑
   } else if (growth < 0) {
     growthColor = 'red.500'; // 負の場合は赤
-  } else {
+  } else if (growth == 0) {
     growthColor = 'secondaryGray.600'; // growthが0の場合はグレー
   }
 
@@ -52,13 +52,13 @@ export default function Default(props) {
             }}>
             {value}
           </StatNumber>
-          {growth != null ? (
+          {growth ? (
             <Flex align='center'>
               <Text color={growthColor} fontSize='xs' fontWeight='700' me='5px'>
-                {growth > 0 ? '+' : ''}{growth} {growthUnit ? growthUnit : ''}
+                {growth > 0 ? '+' : ''}{growth}{growthUnit ? growthUnit : ''}
               </Text>
               <Text color='secondaryGray.600' fontSize='xs' fontWeight='400'>
-                for 1 hour ago
+                since last month
               </Text>
             </Flex>
           ) : null}

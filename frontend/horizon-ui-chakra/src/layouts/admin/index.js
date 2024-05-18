@@ -140,7 +140,7 @@ export default function Dashboard(props) {
 							<Box mx='auto' p={{ base: '20px', md: '30px' }} pe='20px' minH='100vh' pt='50px'>
 								<Switch>
 									{getRoutes(routes)}
-									<Redirect from='/' to='/admin/pi_dashboard' />
+									<Redirect from='/' to='/admin/default' />
 								</Switch>
 							</Box>
 						) : null}

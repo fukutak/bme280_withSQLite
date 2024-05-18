@@ -1,5 +1,5 @@
 import React from 'react';
-import * as ReactDOM from 'react-dom/client';
+import ReactDOM from 'react-dom';
 import 'assets/css/App.css';
 import { HashRouter, Route, Switch, Redirect } from 'react-router-dom';
 import AuthLayout from 'layouts/auth';
@@ -9,26 +9,10 @@ import { ChakraProvider } from '@chakra-ui/react';
 import theme from 'theme/theme';
 import { ThemeEditorProvider } from '@hypertheme-editor/chakra-ui';
 
-// add myself
-import { useQuery, useMutation, ApolloClient, InMemoryCache, ApolloProvider, gql } from '@apollo/client';
-import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
-
-const client = new ApolloClient({
-	// uri: 'http://localhost:5000/graphql', // ローカルホスト用
-	// uri: 'http://192.168.3.17:5000/graphql', // プライベートアドレス用
-	uri: 'http://192.168.3.200/graphql', // nginxリバースプロキシ使用するとき
-	cache: new InMemoryCache(),
-  });
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
-
-root.render(
+ReactDOM.render(
 	<ChakraProvider theme={theme}>
 		<React.StrictMode>
 			<ThemeEditorProvider>
-			<LocalizationProvider dateAdapter={AdapterDayjs}>
-			<ApolloProvider client={client}>
 				<HashRouter>
 					<Switch>
 						<Route path={`/auth`} component={AuthLayout} />
@@ -37,9 +21,8 @@ root.render(
 						<Redirect from='/' to='/admin' />
 					</Switch>
 				</HashRouter>
-				</ApolloProvider>
-				</LocalizationProvider>
 			</ThemeEditorProvider>
 		</React.StrictMode>
 	</ChakraProvider>,
+	document.getElementById('root')
 );
