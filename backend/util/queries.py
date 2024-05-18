@@ -4,6 +4,7 @@ import graphene
 from util.schema import BME280, BME280Data, CurrentData, CurrentDataAttribute
 import util.queries
 from util.use_bme280 import readData
+import datetime
 
 
 class DateRangeInput(graphene.InputObjectType):
@@ -25,7 +26,7 @@ class CalcIndex: # 快適指数の計算
     return self.idx
   
   def normalizeN(self, amount, exp): # -のみの時
-    self.idx = ((amounr-self.alw)/self.std)**exp
+    self.idx = ((amount-self.alw)/self.std)**exp
     return self.idx
 
 
@@ -83,7 +84,7 @@ class Query(graphene.ObjectType):
           changeRatePressure=0.0,  # 変化率は未実装なのでとりあえず 0
           currentHumidity=data['hum'],
           changeRateHumidity=0.0,  # 変化率は未実装なのでとりあえず 0
-          currentTimestamp=datetime.datetime.utcnow(),
+          currentTimestamp=datetime.datetime.now(),
           currentComfortIndex=self.calculate_comfort_index(data['temp'], data['hum'], data['press']),  # 快適指数を計算
           changeRateComfortIndex=0.0,  # 変化率は未実装なのでとりあえず 0
       )
