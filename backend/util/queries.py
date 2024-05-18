@@ -146,7 +146,6 @@ class Query(graphene.ObjectType):
     node = relay.Node.Field()
     sensor_list = SQLAlchemyConnectionField(BME280)
     sensor_data_by_date_range = graphene.List(BME280Attribute, date_range=DateRangeInput())
-    sensor_data_by_date_range = graphene.List(BME280Attribute, date_range=DateRangeInput())
     current_data = graphene.Field(CurrentDataAttribute)
 
     def resolve_average_sensor_data(self, info):
@@ -156,34 +155,11 @@ class Query(graphene.ObjectType):
         start_date = date_range.get('start_date')
         end_date = date_range.get('end_date')
 
-        # 期間内のデータをフィルタリングして返す
-        # return BME280Data.query.filter(
-        #     BME280Data.timestamp >= start_date,
-        #     BME280Data.timestamp <= end_date
-        # ).all()
-        data = BME280Data.query.filter(
-        # return BME280Data.query.filter(
-        #     BME280Data.timestamp >= start_date,
-        #     BME280Data.timestamp <= end_date
-        # ).all()
         data = BME280Data.query.filter(
             BME280Data.timestamp >= start_date,
             BME280Data.timestamp <= end_date
         ).all()
-        enhanced_data = []
-        for record in data:
-            comfort_index = calc_comfort_index(record.temperature, record.humidity, record.pressure)
-            enhanced_record = {
-                "id": record.id,
-                "temperature": record.temperature,
-                "pressure": record.pressure,
-                "humidity": record.humidity,
-                "timestamp": record.timestamp,
-                "room_id": record.room_id,
-                "comfortIndex": comfort_index
-            }
-            enhanced_data.append(enhanced_record)
-        return enhanced_data
+
         enhanced_data = []
         for record in data:
             comfort_index = calc_comfort_index(record.temperature, record.humidity, record.pressure)
@@ -202,17 +178,11 @@ class Query(graphene.ObjectType):
     def resolve_current_data(self, info):
         """
         BME280 センサーから最新のデータを測定し、CurrentDataAttribute オブジェクトとして返します。
-        """
-        BME280 センサーから最新のデータを測定し、CurrentDataAttribute オブジェクトとして返します。
-
+        
         Args:
             info: GraphQL context information
-        Args:
-            info: GraphQL context information
+        
 
-        Returns:
-            CurrentDataAttribute: センサーの最新のデータ
-        """
         Returns:
             CurrentDataAttribute: センサーの最新のデータ
         """
@@ -284,23 +254,12 @@ query{
     currentComfortIndex
     changeRateComfortIndex
   }
-  sensorDataByDateRange(dateRange: { startDate: "2024-05-11T00:00:00", endDate: "2024-05-11T23:59:59" }) {
-  currentData{
-    currentTimestamp
-    currentTemperature
-    changeRateTemperature
-    currentPressure
-    changeRatePressure
-    currentHumidity
-    changeRateHumidity
-    currentComfortIndex
-    changeRateComfortIndex
-  }
-  sensorDataByDateRange(dateRange: { startDate: "2024-05-11T00:00:00", endDate: "2024-05-11T23:59:59" }) {
+  sensorDataByDateRange(dateRange: { startDate: "2024-05-11T00:00:00", endDate: "2024-05-11T23:59:59" }){
     temperature
     pressure
     humidity
     timestamp
+    comfortIndex
   }
 }
 """
