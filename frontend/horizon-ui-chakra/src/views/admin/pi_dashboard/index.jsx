@@ -147,7 +147,7 @@ export default function UserReports() {
     return todayEnd.toISOString({ timeZone: 'Asia/Tokyo' });
   });
 
-  const { loading, error, data } = useQuery(GET_SENSOR_DATA, {
+  const { loading, error, data, refetch } = useQuery(GET_SENSOR_DATA, {
     variables: { startDate, endDate },
   });
 
@@ -223,6 +223,14 @@ export default function UserReports() {
       }
     }
   }, [data]);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      refetch();
+    }, 1000*5); // 5 minutes in milliseconds
+
+    return () => clearInterval(intervalId); // Cleanup on unmount
+  }, [refetch]);
   
   return (
     <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
