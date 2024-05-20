@@ -24,13 +24,13 @@ class CalcIndex: # 快適指数の計算
     self.alw = alw
   
   def normalizeNP(self, amount, exp): # +=の時
-    self.idx = (abs(amount-self.std)/self.alw)**exp
-    self.idx = (abs(amount-self.std)/self.alw)**exp
+    self.idx = (abs(self.std-amount)/self.alw)**exp
     return self.idx
   
   def normalizeN(self, amount, exp): # -のみの時
-    self.idx = ((amount-self.std)/self.alw)**exp
-    self.idx = ((amount-self.std)/self.alw)**exp
+    self.idx = ((self.std-amount)/self.alw)**exp
+    if self.idx < 0:
+        self.idx = 0
     return self.idx
 
 def calc_comfort_index(T, H, P): # T:temperature, H:humidity, P:pressure
@@ -65,7 +65,10 @@ def calc_change_rate(current_data, past_hour_data):
         comfort_index = calc_comfort_index(current_data['temp'], current_data['hum'], current_data['press'])
         
         # 最新データと過去1時間前のデータを取得
-        latest_past_data = past_hour_data[1]
+        if len(past_hour_data) > 0:
+            latest_past_data = past_hour_data[1]
+        else:
+            latest_past_data = past_hour_data[0]
         print(latest_past_data.timestamp)
         latest_comfort_index = calc_comfort_index(latest_past_data.temperature, latest_past_data.humidity, latest_past_data.pressure)
 
