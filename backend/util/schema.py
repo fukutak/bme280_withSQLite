@@ -32,6 +32,14 @@ class CurrentDataAttribute(graphene.ObjectType):
     changeRateComfortIndex = graphene.Float(description='changeRate ComfortIndex')
     todayCommits = graphene.Int(description='Today Commits')
     totalCommits = graphene.Int(description='Total Commits')
+    currentTemperatureIndex = graphene.Float(description='Index Temp')
+    currentPressureIndex = graphene.Float(description='Index Pressure')
+    currentHumidityIndex = graphene.Float(description='Index Humidity')
+
+class WeeklyAnalytict(graphene.ObjectType):
+    weeklyCommits = graphene.List(graphene.Int, description='List of weekly commits')
+    weeklyColumns = graphene.List(graphene.String, description='List of weekly commits columns')
+
 
 
 class CurrentData(SQLAlchemyObjectType, CurrentDataAttribute):

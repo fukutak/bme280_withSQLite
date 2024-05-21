@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  flask-backend:
+    image: flask-backend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    restart: always
+    volumes:
+      - /home/pi/Raspberry_PI_codes/bme280_withSQLite/backend/:/code
+    environment:
+      FLASK_APP: main.py
+      FLASK_ENV: production

@@ -33,65 +33,16 @@ class CalcIndex: # 快適指数の計算
         self.idx = 0
     return self.idx
 
-def calc_comfort_index(T, H, P): # T:temperature, H:humidity, P:pressure
+def calc_comfort_index(T, H, P, all_index=False): # T:temperature, H:humidity, P:pressure
     # 快適指数の計算
     T_idx = CalcIndex(25, 3).normalizeNP(T, 1.5)
     H_idx = CalcIndex(50, 10).normalizeNP(H, 1.2)
     P_idx = CalcIndex(1013.25, 13).normalizeN(P, 1)
 
     comfort_index = -100/3*(T_idx+H_idx+P_idx) + 100
-    return round(comfort_index, 1)
-
-def calc_change_rate(current_data, past_hour_data):
-    """
-    現在のデータと過去1時間のデータから変化率を計算します。
-
-    Args:
-        current_data: 最新のセンサーデータ
-        past_hour_data: 過去1時間のセンサーデータ
-
-    Returns:
-        dict: 変化率データ
-    """
-
-    change_rate_data = {
-        'temp': 0.0,
-        'press': 0.0,
-        'hum': 0.0,
-        'comfort_index': 0.0
-    }
-
-    if past_hour_data:
-        comfort_index = calc_comfort_index(current_data['temp'], current_data['hum'], current_data['press'])
-        
-        # 最新データと過去1時間前のデータを取得
-        if len(past_hour_data) > 0:
-            latest_past_data = past_hour_data[1]
-        else:
-            latest_past_data = past_hour_data[0]
-        print(latest_past_data.timestamp)
-        latest_comfort_index = calc_comfort_index(latest_past_data.temperature, latest_past_data.humidity, latest_past_data.pressure)
-
-        # 変化率を計算
-        # change_rate_data['temp'] = round((current_data['temp'] - latest_past_data.temperature) / latest_past_data.temperature * 100, 1)
-        # change_rate_data['hum'] = round((current_data['hum'] - latest_past_data.humidity) / latest_past_data.humidity * 100, 1)
-        # change_rate_data['press'] = round(current_data['press'] - latest_past_data.pressure, 1)
-        # change_rate_data['comfort_index'] = round((comfort_index - latest_comfort_index) / latest_comfort_index * 100, 1)
-
-        # 差分を計算
-        change_rate_data['temp'] = round(current_data['temp'] - latest_past_data.temperature, 1)
-        change_rate_data['hum'] = round(current_data['hum'] - latest_past_data.humidity, 1)
-        change_rate_data['press'] = round(current_data['press'] - latest_past_data.pressure, 1)
-        change_rate_data['comfort_index'] = round(comfort_index - latest_comfort_index, 1)
-    return change_rate_data
-def calc_comfort_index(T, H, P): # T:temperature, H:humidity, P:pressure
-    # 快適指数の計算
-    T_idx = CalcIndex(25, 3).normalizeNP(T, 1.5)
-    H_idx = CalcIndex(50, 10).normalizeNP(H, 1.2)
-    P_idx = CalcIndex(1013.25, 13).normalizeN(P, 1)
-
-    comfort_index = -100/3*(T_idx+H_idx+P_idx) + 100
-    return round(comfort_index, 1)
+    if not all_index:
+        return round(comfort_index, 1)
+    return round(comfort_index, 1), round(T_idx, 3), round(H_idx, 3), round(P_idx, 3)
 
 def calc_change_rate(current_data, past_hour_data):
     """
@@ -210,6 +161,8 @@ class Query(graphene.ObjectType):
 
         # 全レコード数
         total_commits = BME280Data.query.count()
+        indecies = calc_comfort_index(data['temp'], data['hum'], data['press'], all_index=True)
+        print(indecies)
 
         # 読み込んだデータを CurrentDataAttribute オブジェクトに変換する
         current_data = CurrentDataAttribute(
@@ -220,10 +173,13 @@ class Query(graphene.ObjectType):
             changeRatePressure=change_rate_data['press'],
             currentHumidity=round(data['hum'], 1),
             changeRateHumidity=change_rate_data['hum'],
-            currentComfortIndex=calc_comfort_index(data['temp'], data['hum'], data['press']),
+            currentComfortIndex=indecies[0],
             changeRateComfortIndex=change_rate_data['comfort_index'],
             todayCommits=today_commits,
-            totalCommits=total_commits
+            totalCommits=total_commits,
+            currentTemperatureIndex=indecies[1],
+            currentHumidityIndex=indecies[2],
+            currentPressureIndex=indecies[3],
         )
         return current_data
 
