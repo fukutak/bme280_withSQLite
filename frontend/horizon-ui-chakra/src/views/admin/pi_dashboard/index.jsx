@@ -21,6 +21,7 @@ import {
   AccordionButton,
   AccordionPanel,
   AccordionIcon,
+  Grid
 } from "@chakra-ui/react";
 // Assets
 import Usa from "assets/img/dashboards/usa.png";
@@ -78,6 +79,9 @@ const GET_SENSOR_DATA = gql`
       changeRateComfortIndex
       todayCommits
       totalCommits
+      currentTemperatureIndex
+      currentHumidityIndex
+      currentPressureIndex
     }
     sensorDataByDateRange(dateRange: { startDate: $startDate, endDate: $endDate }) {
       temperature
@@ -86,10 +90,24 @@ const GET_SENSOR_DATA = gql`
       comfortIndex
       timestamp
     }
+    weeklyAnalyticts{
+      weeklyCommits
+      weeklyColumns
+    }
   }
 `;
 // sensorDataByDateRange(dateRange: { startDate: "2024-05-11T00:00:00", endDate: "2024-05-11T23:59:59" }) {
 // sensorDataByDateRange(dateRange: { startDate: $startDate, endDate: $endDate }) {
+
+function parceDate(date) {
+  const parsedDate = new Date(date);
+
+  const year = parsedDate.getFullYear();
+  const month = String(parsedDate.getMonth() + 1).padStart(2, '0'); // 月は0から始まるため+1し、2桁にする
+  const day = String(parsedDate.getDate()).padStart(2, '0'); // 日を2桁にする
+
+  return `${year}-${month}-${day}`;
+}
 
 export default function UserReports() {
   // Chakra Color Mode
@@ -100,12 +118,10 @@ export default function UserReports() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const openModal = () => {
-    console.log(isModalOpen);
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
-    console.log(isModalOpen);
     setIsModalOpen(false);
   };
 
@@ -121,6 +137,7 @@ export default function UserReports() {
   const [pressureChangeRate, setPressureChangeRate] = useState(NaN);
   const [todayCommits, setTodayCommits] = useState(NaN);
   const [totalCommits, setTotalCommits] = useState(NaN);
+  const [indexList, setIndexList] = useState([1,1,1]);
 
   // setTimeSeriesData
   const [comfortIndicesTimeSeries, setComfortIndicesTimeSeries] = useState([]);
@@ -128,6 +145,11 @@ export default function UserReports() {
   const [humidityTimeSeries, setHumidityTimeSeries] = useState([]);
   const [pressureTimeSeries, setPressureTimeSeries] = useState([]);
   const [timeStamps, setTimeStamps] = useState([]);
+
+  // setWeelkyAnalyticts
+  const [weeklyCommits, setWeeklyCommits] = useState([])
+  const [weeklyColumns, setWeeklyColumns] = useState(["Monday","Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"])
+
 
   // const [startDate, setStartDate] = useState("2024-05-13T00:00:00");
   // const [endDate, setEndDate] = useState("2024-05-13T23:59:59");
@@ -173,7 +195,10 @@ export default function UserReports() {
           currentTemperature,
           changeRateTemperature,
           todayCommits,
-          totalCommits
+          totalCommits,
+          currentTemperatureIndex,
+          currentHumidityIndex,
+          currentPressureIndex
         } = data.currentData;
   
         // Update individual state variables
@@ -183,6 +208,7 @@ export default function UserReports() {
           day: '2-digit',
           hour: '2-digit',
           minute: '2-digit',
+          second: '2-digit',
           hour12: false
         });
         setCurrentTimeStamp(formattedDate);
@@ -196,6 +222,7 @@ export default function UserReports() {
         setPressureChangeRate(changeRatePressure);
         setTodayCommits(todayCommits);
         setTotalCommits(totalCommits);
+        setIndexList([currentTemperatureIndex, currentHumidityIndex, currentPressureIndex]);
       } else {
         console.warn('No current data found in response');
         // Handle the case where no current data is available
@@ -221,13 +248,21 @@ export default function UserReports() {
         setPressureTimeSeries(pressures);
         setTimeStamps(timestamps);
       }
+      if(data.weeklyAnalyticts){
+        
+        const {weeklyCommits, weeklyColumns} = data.weeklyAnalyticts;
+        console.log("useState")
+        console.log(weeklyCommits, weeklyColumns);
+        setWeeklyColumns(weeklyColumns);
+        setWeeklyCommits(weeklyCommits);
+      }
     }
   }, [data]);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
       refetch();
-    }, 1000*5); // 5 minutes in milliseconds
+    }, 1000*3); // 5 minutes in milliseconds
 
     return () => clearInterval(intervalId); // Cleanup on unmount
   }, [refetch]);
@@ -320,98 +355,123 @@ export default function UserReports() {
         value={todayCommits + " / 96"}
       />
     </SimpleGrid>
-    <SimpleGrid
-      columns={{ base: 1, md: 3, lg: 3, "2xl": 3 }}
-      gap="20px"
-      mb="20px"
-    >
-      <Accordion allowToggle>
-        <AccordionItem>
-          <AccordionButton>
-            <Box flex="1" textAlign="left">
-              Select Day
-            </Box>
-            <AccordionIcon />
-          </AccordionButton>
-          <AccordionPanel pb={4}>
-            <MiniCalendar
-              h="100%"
-              minW="100%"
-              selectRange={false}
-              setStartDate={setStartDate}
-              setEndDate={setEndDate}
-            />
-          </AccordionPanel>
-        </AccordionItem>
-      </Accordion>
-      {/* <Button
-            bg={boxBg}
-            fontSize='sm'
-            fontWeight='500'
-            color={textColorSecondary}
-            borderRadius='7px'
-            onClick={openModal}
-            >
-            <Icon
-              as={MdOutlineCalendarToday}
-              color={textColorSecondary}
-              me='4px'
-            />
-            Select Day
-          </Button> */}
-      <MiniStatistics
-        startContent={
-          <IconBox
-            w="56px"
-            h="56px"
-            bg={boxBg}
-            icon={<Icon w="32px" h="32px" as={MdWater} color={brandColor} />}
-          />
-        }
-        name="Start Date"
-        value={startDate}
-      />
-      <MiniStatistics
-        startContent={
-          <IconBox
-            w="56px"
-            h="56px"
-            bg={boxBg}
-            icon={<Icon w="32px" h="32px" as={MdWater} color={brandColor} />}
-          />
-        }
-        name="End Date"
-        value={endDate}
-      />
-    </SimpleGrid>
       <SimpleGrid columns={{ base: 1, md: 1, xl: 2 }} gap='20px' mb='20px'>
-        {/* <TotalSpent yData={comfortTimeSeries} xData={timeStamps} /> */}
+        <PieCard indexList={indexList} />
+        <DailyTraffic weeklyCommits={weeklyCommits} weeklyColumns={weeklyColumns} />
+      </SimpleGrid>
+      <SimpleGrid columns={{ base: 1, md: 1, xl: 1 }} gap='20px' mb='20px'>
+      <Accordion allowToggle w="100%">
+      <AccordionItem>
+        <AccordionButton>
+          <Box flex="1" textAlign="center">
+            Select Day - {parceDate(startDate)}
+          </Box>
+          <AccordionIcon />
+        </AccordionButton>
+        <AccordionPanel pb={4}>
+          <MiniCalendar
+            h="100%"
+            minW="100%"
+            selectRange={false}
+            setStartDate={setStartDate}
+            setEndDate={setEndDate}
+          />
+        </AccordionPanel>
+      </AccordionItem>
+    </Accordion>
+    </SimpleGrid>
+    <SimpleGrid columns={{ base: 1, md: 1, xl: 2 }} gap='20px' mb='20px'>
         <TotalSpent yData={comfortIndicesTimeSeries} xData={timeStamps} title={"Comfort Index"} unit=" p"/>
         <TotalSpent yData={temperatureTimeSeries} xData={timeStamps} title={"Temperature"} unit=" °C"/>
         <TotalSpent yData={humidityTimeSeries} xData={timeStamps} title={"Humidity"} unit=" %"/>
         <TotalSpent yData={pressureTimeSeries} xData={timeStamps} title={"Pressure"} unit=" hPa"/>
-        <WeeklyRevenue />
-        <WeeklyRevenue />
-        <WeeklyRevenue />
-        <WeeklyRevenue />
       </SimpleGrid>
+      <SimpleGrid
+      columns={{ base: 1, md: 5, lg: 5, "2xl": 5 }}
+      gap="20px"
+      mb="20px"
+    >
+  <Box 
+    gridColumn={{ base: "span 1", md: "span 1", lg: "span 1", "2xl": "span 1" }} 
+    display="flex" 
+    alignItems="center" 
+    justifyContent="center"
+  >
+    <Accordion allowToggle w="100%">
+      <AccordionItem>
+        <AccordionButton>
+          <Box flex="1" textAlign="center">
+            Select Day
+          </Box>
+          <AccordionIcon />
+        </AccordionButton>
+        <AccordionPanel pb={4}>
+          <MiniCalendar
+            h="100%"
+            minW="100%"
+            selectRange={false}
+            setStartDate={setStartDate}
+            setEndDate={setEndDate}
+          />
+        </AccordionPanel>
+      </AccordionItem>
+    </Accordion>
+  </Box>
+    <Box 
+    gridColumn={{ base: "span 2", md: "span 2", lg: "span 2", "2xl": "span 2"  }} 
+    display="flex" 
+    alignItems="center" 
+    justifyContent="center"
+    gap="20px"
+    mb="20px"
+    maxWidth
+  >
+    <MiniStatistics
+      startContent={
+        <IconBox
+          w="56px"
+          h="56px"
+          bg={boxBg}
+          icon={<Icon w="32px" h="32px" as={MdWater} color={brandColor} />}
+        />
+      }
+      name="Start Date"
+      value={startDate}
+    />
+    </Box>
+    <Box 
+    gridColumn={{ base: "span 2", md: "span 2", lg: "span 2", "2xl": "span 2"  }} 
+    display="flex" 
+    alignItems="center" 
+    justifyContent="center"
+    gap="20px"
+    mb="20px"
+    maxWidth
+  >
+    <MiniStatistics
+      startContent={
+        <IconBox
+          w="56px"
+          h="56px"
+          bg={boxBg}
+          icon={<Icon w="32px" h="32px" as={MdWater} color={brandColor} />}
+        />
+      }
+      name="End Date"
+      value={endDate}
+    />
+    </Box>
+</SimpleGrid>
       <SimpleGrid columns={{ base: 1, md: 1, xl: 2 }} gap='20px' mb='20px'>
         <CheckTable columnsData={columnsDataCheck} tableData={tableDataCheck} />
-        <SimpleGrid columns={{ base: 1, md: 2, xl: 2 }} gap='20px'>
-          <DailyTraffic />
-          <PieCard />
-        </SimpleGrid>
       </SimpleGrid>
       <SimpleGrid columns={{ base: 1, md: 1, xl: 2 }} gap='20px' mb='20px'>
         <ComplexTable
           columnsData={columnsDataComplex}
           tableData={tableDataComplex}
         />
+        <Tasks />
       </SimpleGrid>
-      <SimpleGrid columns={{ base: 1, md: 2, xl: 2 }} gap='20px'>
-          <Tasks />
-          <MiniCalendar h='100%' minW='100%' selectRange={false} setStartDate={setStartDate} setEndDate={setEndDate}  />
-        </SimpleGrid>
     <SimpleGrid
       columns={{ base: 1, md: 2, lg: 2, "2xl": 2 }}
       gap="20px"

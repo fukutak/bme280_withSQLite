@@ -20,8 +20,10 @@ class ColumnChart extends Component {
   render() {
     return (
       <Chart
-        options={this.state.chartOptions}
-        series={this.state.chartData}
+        // options={this.state.chartOptions}
+        // series={this.state.chartData}
+        options={this.props.chartOptions}
+        series={this.props.chartData}
         type='bar'
         width='100%'
         height='100%'

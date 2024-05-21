@@ -14,8 +14,121 @@ import {
 // Assets
 import { RiArrowUpSFill } from "react-icons/ri";
 
+function barChartOptionsWeekly(colmns) {
+  return {
+    chart: {
+      toolbar: {
+        show: false,
+      },
+    },
+    tooltip: {
+      style: {
+        fontSize: "12px",
+        fontFamily: undefined,
+      },
+      onDatasetHover: {
+        style: {
+          fontSize: "12px",
+          fontFamily: undefined,
+        },
+      },
+      theme: "dark",
+    },
+    xaxis: {
+      categories: colmns,
+      show: false,
+      labels: {
+        show: true,
+        style: {
+          colors: "#A3AED0",
+          fontSize: "14px",
+          fontWeight: "500",
+        },
+      },
+      axisBorder: {
+        show: false,
+      },
+      axisTicks: {
+        show: false,
+      },
+    },
+    yaxis: {
+      show: false,
+      color: "black",
+      labels: {
+        show: true,
+        style: {
+          colors: "#CBD5E0",
+          fontSize: "14px",
+        },
+      },
+    },
+    grid: {
+      show: false,
+      strokeDashArray: 5,
+      yaxis: {
+        lines: {
+          show: true,
+        },
+      },
+      xaxis: {
+        lines: {
+          show: false,
+        },
+      },
+    },
+    fill: {
+      type: "gradient",
+      gradient: {
+        type: "vertical",
+        shadeIntensity: 1,
+        opacityFrom: 0.7,
+        opacityTo: 0.9,
+        colorStops: [
+          [
+            {
+              offset: 0,
+              color: "#4318FF",
+              opacity: 1,
+            },
+            {
+              offset: 100,
+              color: "rgba(67, 24, 255, 1)",
+              opacity: 0.28,
+            },
+          ],
+        ],
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    plotOptions: {
+      bar: {
+        borderRadius: 10,
+        columnWidth: "40px",
+      },
+    },
+  };
+}
+
+function barChartDataWeeklyCommits(data){
+  return [ {
+    name: "Weekly Commits",
+    data: data,
+  },
+];
+}
+
 export default function DailyTraffic(props) {
   const { ...rest } = props;
+  const weeklyCommits = props.weeklyCommits
+  const weeklyColumns = props.weeklyColumns
+  const weeklySumCommits = weeklyCommits.reduce((sum, element) => sum + element, 0);
+  console.log("KASDGSD");
+  console.log(typeof weeklyCommits[0]);
+  console.log(weeklyColumns);
+
 
   // Chakra Color Mode
   const textColor = useColorModeValue("secondaryGray.900", "white");
@@ -29,7 +142,7 @@ export default function DailyTraffic(props) {
               color='secondaryGray.600'
               fontSize='sm'
               fontWeight='500'>
-              Daily Traffic
+              Total Commits in this week
             </Text>
           </Flex>
           <Flex align='end'>
@@ -38,14 +151,14 @@ export default function DailyTraffic(props) {
               fontSize='34px'
               fontWeight='700'
               lineHeight='100%'>
-              2.579
+              {weeklySumCommits}
             </Text>
             <Text
               ms='6px'
               color='secondaryGray.600'
               fontSize='sm'
               fontWeight='500'>
-              Visitors
+              Commits
             </Text>
           </Flex>
         </Flex>
@@ -58,8 +171,8 @@ export default function DailyTraffic(props) {
       </Flex>
       <Box h='240px' mt='auto'>
         <BarChart
-          chartData={barChartDataDailyTraffic}
-          chartOptions={barChartOptionsDailyTraffic}
+          chartData={barChartDataWeeklyCommits(weeklyCommits)}
+          chartOptions={barChartOptionsWeekly(weeklyColumns)}
         />
       </Box>
     </Card>
