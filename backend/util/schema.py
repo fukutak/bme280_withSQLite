@@ -36,7 +36,7 @@ class CurrentDataAttribute(graphene.ObjectType):
     currentPressureIndex = graphene.Float(description='Index Pressure')
     currentHumidityIndex = graphene.Float(description='Index Humidity')
 
-class WeeklyAnalytict(graphene.ObjectType):
+class WeeklyAnalyticts(graphene.ObjectType):
     weeklyCommits = graphene.List(graphene.Int, description='List of weekly commits')
     weeklyColumns = graphene.List(graphene.String, description='List of weekly commits columns')
 

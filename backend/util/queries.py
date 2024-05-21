@@ -1,12 +1,11 @@
 from graphene_sqlalchemy import SQLAlchemyConnectionField
 from graphene import relay
 import graphene
-from util.schema import BME280, BME280Data, BME280Attribute, CurrentData, CurrentDataAttribute
-from util.schema import BME280, BME280Data, BME280Attribute, CurrentData, CurrentDataAttribute
+from util.schema import BME280, BME280Data, BME280Attribute, CurrentData, CurrentDataAttribute, WeeklyAnalyticts
 import util.queries
 from util.use_bme280 import readData
 import datetime
-import datetime
+import calendar
 
 
 class DateRangeInput(graphene.InputObjectType):
@@ -101,6 +100,7 @@ class Query(graphene.ObjectType):
     sensor_list = SQLAlchemyConnectionField(BME280)
     sensor_data_by_date_range = graphene.List(BME280Attribute, date_range=DateRangeInput())
     current_data = graphene.Field(CurrentDataAttribute)
+    weekly_analyticts = graphene.Field(WeeklyAnalyticts)
 
     def resolve_average_sensor_data(self, info):
         return resolve_average_sensor_data(self, info)
@@ -115,6 +115,19 @@ class Query(graphene.ObjectType):
         ).all()
 
         enhanced_data = []
+
+        # 開始日の00:00:00.000のnullデータ
+        start_of_day = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        enhanced_data.append({
+            "id": None,
+            "temperature": None,
+            "pressure": None,
+            "humidity": None,
+            "timestamp": start_of_day,
+            "room_id": None,
+            "comfortIndex": None
+        })
+
         for record in data:
             comfort_index = calc_comfort_index(record.temperature, record.humidity, record.pressure)
             enhanced_record = {
@@ -127,6 +140,19 @@ class Query(graphene.ObjectType):
                 "comfortIndex": comfort_index
             }
             enhanced_data.append(enhanced_record)
+        
+        # 終了日の23:59:59.999のnullデータ
+        end_of_day = end_date.replace(hour=23-9, minute=59, second=59, microsecond=999)
+        print(end_of_day)
+        enhanced_data.append({
+            "id": None,
+            "temperature": None,
+            "pressure": None,
+            "humidity": None,
+            "timestamp": end_of_day,
+            "room_id": None,
+            "comfortIndex": None
+        })
         return enhanced_data
       
     def resolve_current_data(self, info):
@@ -182,6 +208,27 @@ class Query(graphene.ObjectType):
             currentPressureIndex=indecies[3],
         )
         return current_data
+    
+    def resolve_weekly_analyticts(self, info):
+        now = datetime.datetime.now()
+        start_of_week = now - datetime.timedelta(days=now.weekday())  # 今週の月曜日の日付を取得
+
+        weekly_commits = []
+        weekly_columns = []
+
+        for i in range(7):  # 月曜日から日曜日までの7日間をループ
+            day = start_of_week + datetime.timedelta(days=i)
+            commits_count = BME280Data.query.filter(
+                BME280Data.timestamp >= day.date(),
+                BME280Data.timestamp < (day + datetime.timedelta(days=1)).date()
+            ).count()
+            weekly_commits.append(commits_count)
+            weekly_columns.append(calendar.day_name[i])
+
+        return WeeklyAnalyticts(
+            weeklyCommits=weekly_commits,
+            weeklyColumns=weekly_columns
+        )
 
 class Subscription(graphene.ObjectType):
     sensor_data_updated = graphene.Field(graphene.List(BME280), date_range=DateRangeInput())
@@ -212,6 +259,9 @@ query{
     changeRateHumidity
     currentComfortIndex
     changeRateComfortIndex
+    currentTemperatureIndex
+    currentHumidityIndex
+    currentPressureIndex
   }
   sensorDataByDateRange(dateRange: { startDate: "2024-05-11T00:00:00", endDate: "2024-05-11T23:59:59" }){
     temperature
@@ -221,4 +271,4 @@ query{
     comfortIndex
   }
 }
-"""
+""" 
