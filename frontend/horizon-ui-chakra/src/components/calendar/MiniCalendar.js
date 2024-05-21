@@ -9,8 +9,25 @@ import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import Card from "components/card/Card.js";
 
 export default function MiniCalendar(props) {
-  const { selectRange, ...rest } = props;
-  const [value, onChange] = useState(new Date());
+  const { selectRange, setStartDate, setEndDate, ...rest } = props;
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const displaySelectedDate = () => {
+    return selectedDate.toLocaleDateString(); 
+  };
+
+  const handleChange = (date) => {
+    setSelectedDate(date);
+
+    const start = new Date(date);
+    start.setHours(0+9, 0, 0, 0); // 00:00:00.000
+    const end = new Date(date);
+    end.setHours(23+9, 59, 59, 999); // 23:59:59.999
+
+
+    // 選択された日付の範囲を親コンポーネントに渡す
+    setStartDate(start.toISOString());
+    setEndDate(end.toISOString());
+  };
   return (
     <Card
       align='center'
@@ -21,8 +38,8 @@ export default function MiniCalendar(props) {
       h='max-content'
       {...rest}>
       <Calendar
-        onChange={onChange}
-        value={value}
+        onChange={handleChange}
+        value={selectedDate}
         selectRange={selectRange}
         view={"month"}
         tileContent={<Text color='brand.500'></Text>}

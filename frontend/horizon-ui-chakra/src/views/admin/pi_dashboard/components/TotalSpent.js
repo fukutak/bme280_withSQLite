@@ -323,19 +323,6 @@ export default function TotalSpent(props) {
           {props.title}
         </Text>
           <Button
-            bg={boxBg}
-            fontSize='sm'
-            fontWeight='500'
-            color={textColorSecondary}
-            borderRadius='7px'>
-            <Icon
-              as={MdOutlineCalendarToday}
-              color={textColorSecondary}
-              me='4px'
-            />
-            add Day
-          </Button>
-          <Button
             ms='auto'
             align='center'
             justifyContent='center'

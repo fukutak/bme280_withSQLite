@@ -8,6 +8,19 @@ import {
   Select,
   SimpleGrid,
   useColorModeValue,
+  Button,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  Accordion,
+  AccordionItem,
+  AccordionButton,
+  AccordionPanel,
+  AccordionIcon,
 } from "@chakra-ui/react";
 // Assets
 import Usa from "assets/img/dashboards/usa.png";
@@ -26,7 +39,8 @@ import {
   MdThermostat,
   MdCloud,
   MdAccessibility,
-  MdLockClock
+  MdLockClock,
+  MdOutlineCalendarToday
 } from "react-icons/md";
 import CheckTable from "views/admin/pi_dashboard/components/CheckTable";
 import ComplexTable from "views/admin/pi_dashboard/components/ComplexTable";
@@ -81,6 +95,19 @@ export default function UserReports() {
   // Chakra Color Mode
   const brandColor = useColorModeValue("brand.500", "white");
   const boxBg = useColorModeValue("secondaryGray.300", "whiteAlpha.100");
+  const textColorSecondary = useColorModeValue("secondaryGray.600", "white");
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = () => {
+    console.log(isModalOpen);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    console.log(isModalOpen);
+    setIsModalOpen(false);
+  };
 
   // setCurrentData
   const [currentTime, setCurrentTimeStamp] = useState('');
@@ -120,7 +147,7 @@ export default function UserReports() {
     return todayEnd.toISOString({ timeZone: 'Asia/Tokyo' });
   });
 
-  const { loading, error, data } = useQuery(GET_SENSOR_DATA, {
+  const { loading, error, data, refetch } = useQuery(GET_SENSOR_DATA, {
     variables: { startDate, endDate },
   });
 
@@ -196,6 +223,14 @@ export default function UserReports() {
       }
     }
   }, [data]);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      refetch();
+    }, 1000*5); // 5 minutes in milliseconds
+
+    return () => clearInterval(intervalId); // Cleanup on unmount
+  }, [refetch]);
   
   return (
     <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
@@ -286,10 +321,44 @@ export default function UserReports() {
       />
     </SimpleGrid>
     <SimpleGrid
-      columns={{ base: 1, md: 2, lg: 2, "2xl": 2 }}
+      columns={{ base: 1, md: 3, lg: 3, "2xl": 3 }}
       gap="20px"
       mb="20px"
     >
+      <Accordion allowToggle>
+        <AccordionItem>
+          <AccordionButton>
+            <Box flex="1" textAlign="left">
+              Select Day
+            </Box>
+            <AccordionIcon />
+          </AccordionButton>
+          <AccordionPanel pb={4}>
+            <MiniCalendar
+              h="100%"
+              minW="100%"
+              selectRange={false}
+              setStartDate={setStartDate}
+              setEndDate={setEndDate}
+            />
+          </AccordionPanel>
+        </AccordionItem>
+      </Accordion>
+      {/* <Button
+            bg={boxBg}
+            fontSize='sm'
+            fontWeight='500'
+            color={textColorSecondary}
+            borderRadius='7px'
+            onClick={openModal}
+            >
+            <Icon
+              as={MdOutlineCalendarToday}
+              color={textColorSecondary}
+              me='4px'
+            />
+            Select Day
+          </Button> */}
       <MiniStatistics
         startContent={
           <IconBox
@@ -338,11 +407,16 @@ export default function UserReports() {
           columnsData={columnsDataComplex}
           tableData={tableDataComplex}
         />
-        <SimpleGrid columns={{ base: 1, md: 2, xl: 2 }} gap='20px'>
-          <Tasks />
-          <MiniCalendar h='100%' minW='100%' selectRange={false} />
-        </SimpleGrid>
       </SimpleGrid>
+      <SimpleGrid columns={{ base: 1, md: 2, xl: 2 }} gap='20px'>
+          <Tasks />
+          <MiniCalendar h='100%' minW='100%' selectRange={false} setStartDate={setStartDate} setEndDate={setEndDate}  />
+        </SimpleGrid>
+    <SimpleGrid
+      columns={{ base: 1, md: 2, lg: 2, "2xl": 2 }}
+      gap="20px"
+      mb="20px"
+    ></SimpleGrid>
       <MiniStatistics
         startContent={
           <IconBox

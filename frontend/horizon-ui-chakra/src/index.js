@@ -15,9 +15,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 
 const client = new ApolloClient({
-	// uri: 'http://localhost:5000/graphql', // ローカルホスト用
-	// uri: 'http://192.168.3.17:5000/graphql', // プライベートアドレス用
-	uri: 'http://192.168.3.200/graphql', // nginxリバースプロキシ使用するとき
+	uri: process.env.REACT_APP_GRAPHQL_URI, // nginxリバースプロキシ使用するとき
 	cache: new InMemoryCache(),
   });
 
