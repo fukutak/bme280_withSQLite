@@ -57,7 +57,7 @@ cd backend/
 .venv/bin/activate
 python api.py
 ```
-Backennd has a graphql endpoint. To access http://localhost:5000/graphql, A below page is displayed and queries can be used.
+Backennd created by flask has a graphql endpoint. To access http://localhost:5000/graphql, A below page is displayed and queries can be used.
 ![image](https://github.com/fukutak/bme280_withSQLite/assets/70702704/88e64f2b-d96d-472d-abb0-1d0b17c9cb84)
 
 Queries:
