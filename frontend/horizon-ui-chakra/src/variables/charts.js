@@ -3,7 +3,7 @@
 export const barChartDataDailyTraffic = [
   {
     name: "Daily Traffic",
-    data: [20, 30, 40, 20, 45, 50, 30],
+    data: [20, 30, 40, 0, 5, 50, 30],
   },
 ];
 
@@ -27,7 +27,7 @@ export const barChartOptionsDailyTraffic = {
     theme: "dark",
   },
   xaxis: {
-    categories: ["00", "04", "08", "12", "14", "16", "18"],
+    categories: ["Monday", "Tue", "Wed", "thu", "fri", "sat", "sun"],
     show: false,
     labels: {
       show: true,
@@ -247,7 +247,7 @@ export const pieChartOptions = {
   },
 };
 
-export const pieChartData = [63, 25, 12];
+export const pieChartData = [0.553, 0.221, 0.122];
 
 // Total Spent Default
 

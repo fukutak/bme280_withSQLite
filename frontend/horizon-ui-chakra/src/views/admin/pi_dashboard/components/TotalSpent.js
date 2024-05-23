@@ -21,104 +21,8 @@ import {
 } from "variables/charts";
 
 
-function getLineChartOptions(categories) {
-  return {
-    chart: {
-      toolbar: {
-        show: false,
-      },
-      dropShadow: {
-        enabled: true,
-        top: 13,
-        left: 0,
-        blur: 10,
-        opacity: 0.1,
-        color: "#4318FF",
-      },
-    },
-    colors: ["#4318FF", "#39B8FF"],
-    markers: {
-      size: 0,
-      colors: "white",
-      strokeColors: "#7551FF",
-      strokeWidth: 3,
-      strokeOpacity: 0.9,
-      strokeDashArray: 0,
-      fillOpacity: 1,
-      discrete: [],
-      shape: "circle",
-      radius: 2,
-      offsetX: 0,
-      offsetY: 0,
-      showNullDataPoints: true,
-    },
-    tooltip: {
-      theme: "dark",
-    },
-    dataLabels: {
-      enabled: false,
-    },
-    stroke: {
-      curve: "smooth",
-      type: "line",
-    },
-    xaxis: {
-      type: "datetime",
-      categories: categories, // Use the categories variable here
-      labels: {
-        style: {
-          colors: "#A3AED0",
-          fontSize: "12px",
-          fontWeight: "500",
-        },
-      },
-      axisBorder: {
-        show: false,
-      },
-      axisTicks: {
-        show: true,
-      },
-    },
-    yaxis: {
-      show: true,
-      labels: {
-        style: {
-          colors: "#A3AED0",
-          fontSize: "12px",
-          fontWeight: "500",
-        },
-      },
-    },
-    legend: {
-      show: false,
-    },
-    grid: {
-      show: false,
-      column: {
-        color: ["#7551FF", "#39B8FF"],
-        opacity: 0.5,
-      },
-    },
-    color: ["#7551FF", "#39B8FF"],
-  };
-}
-
 function getLineChartOptionsTimeStamps() {
   return {
-  //   chart: {
-  //     height: 380,
-  //     width: "100%",
-  //     type: "area",
-  //     animations: {
-  //       initialAnimation: {
-  //         enabled: false
-  //       }
-  //     }
-  //   },
-  //   xaxis: {
-  //     type: 'datetime'
-  //   }
-  // }
     chart: {
       toolbar: {
         show: false,
@@ -260,13 +164,13 @@ function calculateAverageAndStdDev(numbers) {
 
 function calculateAverage(numbers) {
   const sum = numbers.reduce((total, num) => total + num, 0);
-  const average = sum / numbers.length;
+  const average = sum / (numbers.length-2);
   return average;
 }
 
 function calculateStdDev(numbers, average) {
   const squaredDeviations = numbers.map((num) => Math.pow(num - average, 2));
-  const variance = squaredDeviations.reduce((total, sqDev) => total + sqDev, 0) / numbers.length;
+  const variance = squaredDeviations.reduce((total, sqDev) => total + sqDev, 0) / (numbers.length-2);
   const stdDev = Math.sqrt(variance);
   return stdDev;
 }
