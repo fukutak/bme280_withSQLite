@@ -35,7 +35,7 @@ class CalcIndex: # 快適指数の計算
 def calc_comfort_index(T, H, P, all_index=False): # T:temperature, H:humidity, P:pressure
     # 快適指数の計算
     T_idx = CalcIndex(25, 3).normalizeNP(T, 1.5)
-    H_idx = CalcIndex(50, 10).normalizeNP(H, 1.2)
+    H_idx = CalcIndex(45, 12).normalizeNP(H, 1.2)
     P_idx = CalcIndex(1013.25, 13).normalizeN(P, 1)
 
     comfort_index = -100/3*(T_idx+H_idx+P_idx) + 100
