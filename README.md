@@ -16,7 +16,7 @@ This system provides real-time visualization of temperature, humidity, and press
 git clone https://github.com/fukutak/bme280_withSQLite.git
 ```
 
-### Install libraries backend and frontend
+### Install libraries of backend and frontend
 Backend install dependencies and start api.py:
 ```
 cd ~/bme280_withSQLite/backend/
