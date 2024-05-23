@@ -164,13 +164,13 @@ function calculateAverageAndStdDev(numbers) {
 
 function calculateAverage(numbers) {
   const sum = numbers.reduce((total, num) => total + num, 0);
-  const average = sum / numbers.length;
+  const average = sum / (numbers.length-2);
   return average;
 }
 
 function calculateStdDev(numbers, average) {
   const squaredDeviations = numbers.map((num) => Math.pow(num - average, 2));
-  const variance = squaredDeviations.reduce((total, sqDev) => total + sqDev, 0) / numbers.length;
+  const variance = squaredDeviations.reduce((total, sqDev) => total + sqDev, 0) / (numbers.length-2);
   const stdDev = Math.sqrt(variance);
   return stdDev;
 }
