@@ -32,7 +32,6 @@ npm install
 ```
 
 
-### Run scripts:
 ### Data Logging:
 Check getting data from BME280 sensor. It is success to dispay each parameter.
 If this don't work, you can search bme280. There is a lot of docs.
@@ -52,7 +51,7 @@ crontab -e
 */15 * * * * cd /home/pi/Raspberry_PI_codes/bme280_withSQLite/backend; ./.venv/bin/python a_record_SQLite.py >> /tmp/cron.log 2>&1
 ```
 
-Backend:
+Launch backend/:
 ```
 cd backend/
 .venv/bin/activate
@@ -89,7 +88,7 @@ query{
 ```
 
 
-### Frontend, Data Visualization:
+### Launc frontend, Data Visualization:
 ```
 cd frontend/
 npm start
