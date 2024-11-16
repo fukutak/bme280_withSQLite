@@ -16,7 +16,7 @@ This system provides real-time visualization of temperature, humidity, and press
 git clone https://github.com/fukutak/bme280_withSQLite.git
 ```
 
-### Install libraries backend and frontend
+### Install libraries of backend and frontend
 Backend install dependencies and start api.py:
 ```
 cd ~/bme280_withSQLite/backend/
@@ -32,7 +32,6 @@ npm install
 ```
 
 
-### Run scripts:
 ### Data Logging:
 Check getting data from BME280 sensor. It is success to dispay each parameter.
 If this don't work, you can search bme280. There is a lot of docs.
@@ -52,13 +51,13 @@ crontab -e
 */15 * * * * cd /home/pi/Raspberry_PI_codes/bme280_withSQLite/backend; ./.venv/bin/python a_record_SQLite.py >> /tmp/cron.log 2>&1
 ```
 
-Backend:
+Launch backend/:
 ```
 cd backend/
 .venv/bin/activate
 python api.py
 ```
-Backennd has a graphql endpoint. To access http://localhost:5000/graphql, A below page is displayed and queries can be used.
+Backennd created by flask has a graphql endpoint. To access http://localhost:5000/graphql, A below page is displayed and queries can be used.
 ![image](https://github.com/fukutak/bme280_withSQLite/assets/70702704/88e64f2b-d96d-472d-abb0-1d0b17c9cb84)
 
 Queries:
@@ -89,7 +88,7 @@ query{
 ```
 
 
-### Frontend, Data Visualization:
+### Launc frontend, Data Visualization:
 ```
 cd frontend/
 npm start
